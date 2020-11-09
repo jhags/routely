@@ -1,31 +1,71 @@
 ''' Routely '''
+
+import math
 import numpy as np
-from scipy.interpolate import interp1d
+from scipy.interpolate import interp1d, interp2d
+import seaborn as sns
+import matplotlib.pyplot as plt
+
 
 class Route:
 
     def __init__(self, x=None, y=None):
         self.x = x
         self.y = y
-        self.route = list(zip(x, y))
+        self.d = self.calculate_distance()
+
+        self.route = list(zip(x, y, self.d))
+
+
+    def plotroute(self, markers=True):
+        sns.scatterplot(x=self.x, y=self.y, markers=markers)
+        # fig = plt.figure()
+        # plt.setp(axs, xticks=[], yticks=[])
+        # fig.tight_layout()
+        # fig.set_size_inches(30, 12)
+        # fig.suptitle('Project folder: %s' % project_folder, fontsize=24)
+
+        # ax.plot(data['x'], data['y'])
+        # ax.set_aspect('equal', 'box')
+        # ax.set_title('Smoothing factor: %s' % (round(s_factor, 2)))
+
+
+    def calculate_distance(self):
+        xy = list(zip(self.x, self.y))
+
+        dist = [0]
+        for i in range(1, len(xy)):
+            dist.append(self.distance_between_two_points(xy[i-1], xy[i]))
+
+        return dist
 
 
     @staticmethod
-    def interoplate(self, nr_points):
-        df = data_xy_dist.copy()
-        x = df[df.columns[0]]
-        y = df[df.columns[1]]
-        a = df[df.columns[2]] # altitude
-        d = df[df.columns[-1]] # the last col is distance
+    def distance_between_two_points(p1, p2):
+        ''' distance between two points (tuples) '''
+        return math.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
 
-        dist = list(np.arange(0, d.max(), nr_points))
+
+    def interoplate(self, nr_steps=1, inplace=False):
+        x = np.array(self.x)
+        y = np.array(self.y)
+        # a = df[df.columns[2]] # altitude
+        d = np.array(self.d) # the last col is distance
+
+        dist = list(np.arange(d.min(), d.max(), nr_steps))
         xx = np.interp(dist, d, x)
         yy = np.interp(dist, d, y)
-        aa = np.interp(dist, d, a)
+        # aa = np.interp(dist, d, a)
 
-        data_int = pd.DataFrame(list(zip(dist, xx, yy, aa)), columns=['distance', 'x', 'y', 'alt'])
+        data_int = list(zip(xx, yy, dist))
 
-        return data_int
+        if inplace:
+            self.x = xx
+            self.y = yy
+            self.d = dist
+
+        elif inplace is False:
+            return data_int
 
 
     @staticmethod

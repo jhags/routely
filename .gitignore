@@ -1,3 +1,4 @@
 # Ignore these
 **/__pycache__
 **/.vscode
+**/routely.egg-info
