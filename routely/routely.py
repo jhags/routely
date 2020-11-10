@@ -157,6 +157,34 @@ class Route:
             return Route(x_new, y_new)
 
 
+    def mirror(self, about_x=False, about_y=False, about_axis=False, inplace=False):
+
+        if about_axis:
+            c = (0, 0)
+        elif about_axis is False:
+            c = self.centre()
+
+        if about_y:
+            x_new = []
+            for p in self.x:
+                x_new.append(-(p - c[0]))
+        else:
+            x_new = self.x
+
+        if about_x:
+            y_new = []
+            for p in self.y:
+                y_new.append(-(p - c[1]))
+        else:
+            y_new = self.y
+
+        if inplace:
+            self.x = np.array(x_new)
+            self.y = np.array(y_new)
+        else:
+            return Route(x_new, y_new)
+
+
 def scale_to_print(data_xy, bbox_print):
     # Scale is in px not mm
     df = data_xy.copy()
