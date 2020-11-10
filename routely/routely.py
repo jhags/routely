@@ -1,33 +1,63 @@
 ''' Routely '''
 
 import math
-import numpy as np
-from scipy.interpolate import interp1d, interp2d
-import seaborn as sns
+
 import matplotlib.pyplot as plt
+import numpy as np
+
+from matplotlib.ticker import MultipleLocator
+from scipy.interpolate import UnivariateSpline, interp1d, interp2d
 
 
 class Route:
 
     def __init__(self, x=None, y=None):
-        self.x = x
-        self.y = y
+        self.x = np.array(x)
+        self.y = np.array(y)
         self.d = self.calculate_distance()
 
-        self.route = list(zip(x, y, self.d))
+
+    def route(self):
+        return list(zip(self.x, self.y, self.d))
+
+
+    def bbox(self):
+        lower = (self.x.min(), self.y.min())
+        upper = (self.x.max(), self.y.max())
+        return (lower, upper)
+
+
+    def centre(self):
+        xc = (self.x.max() + self.x.min())/2.
+        yc = (self.y.max() + self.y.min())/2.
+        return (xc, yc)
 
 
     def plotroute(self, markers=True):
-        sns.scatterplot(x=self.x, y=self.y, markers=markers)
-        # fig = plt.figure()
-        # plt.setp(axs, xticks=[], yticks=[])
-        # fig.tight_layout()
-        # fig.set_size_inches(30, 12)
-        # fig.suptitle('Project folder: %s' % project_folder, fontsize=24)
+        x = self.x
+        y = self.y
 
-        # ax.plot(data['x'], data['y'])
-        # ax.set_aspect('equal', 'box')
-        # ax.set_title('Smoothing factor: %s' % (round(s_factor, 2)))
+        if markers:
+            marker = 'o'
+        else:
+            marker = None
+
+        lb_lim = min(x.min(), y.min())
+        ub_lim = max(x.max(), y.max())
+        tolerance = round((ub_lim - lb_lim) * 0.05, 0)
+        limits = [lb_lim - tolerance, ub_lim + tolerance]
+
+        fig, ax = plt.subplots()
+        ax.plot(x, y, 'k', marker=marker)
+
+        fig.tight_layout()
+
+        ax.set_aspect('equal', 'box')
+        ax.set_xlabel('x')
+        ax.set_ylabel('y')
+        ax.set_xlim(limits)
+        ax.set_ylim(limits)
+        ax.grid(True)
 
 
     def calculate_distance(self):
@@ -37,7 +67,7 @@ class Route:
         for i in range(1, len(xy)):
             dist.append(self.distance_between_two_points(xy[i-1], xy[i]))
 
-        return dist
+        return np.array(dist).cumsum()
 
 
     @staticmethod
@@ -46,18 +76,31 @@ class Route:
         return math.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
 
 
-    def interoplate(self, nr_steps=1, inplace=False):
-        x = np.array(self.x)
-        y = np.array(self.y)
-        # a = df[df.columns[2]] # altitude
-        d = np.array(self.d) # the last col is distance
+    def interoplate(self, kind='steps', num=1, inplace=False):
+        x = self.x
+        y = self.y
+        d = self.d
 
-        dist = list(np.arange(d.min(), d.max(), nr_steps))
-        xx = np.interp(dist, d, x)
-        yy = np.interp(dist, d, y)
-        # aa = np.interp(dist, d, a)
+        if (kind == 'steps') | (kind == 'linear'):
+            if kind == 'steps':
+                dist = list(np.arange(d.min(), d.max()+num, step=num))
 
-        data_int = list(zip(xx, yy, dist))
+            elif kind == 'linear':
+                dist = list(np.linspace(d.min(), d.max(), num=num))
+
+            xx = np.interp(dist, d, x)
+            yy = np.interp(dist, d, y)
+
+        elif kind == 'cubic':
+            dist = np.linspace(d.min(), d.max(), num=num)
+
+            fx = interp1d(d, x, kind='cubic')
+            fy = interp1d(d, y, kind='cubic')
+
+            xx, yy = fx(dist), fy(dist)
+
+        else:
+            raise Exception ("Keyword argument for 'kind' not recognised. Please choose one of 'steps', 'linear, or 'cubic'.")
 
         if inplace:
             self.x = xx
@@ -65,27 +108,53 @@ class Route:
             self.d = dist
 
         elif inplace is False:
-            return data_int
+            return Route(list(xx), list(yy))
+
+
+    def reset_origin(self, new_origin=(0, 0), inplace=False):
+        centre = self.centre()
+
+        # scale x and y
+        x_new = self.x - centre[0] + new_origin[0]
+        y_new = self.y - centre[1] + new_origin[1]
+
+        if inplace:
+            self.x = np.array(x_new)
+            self.y = np.array(y_new)
+        else:
+            return Route(x_new, y_new)
 
 
     @staticmethod
-    def interpolate_cubic(self, data_xy_dist):
-        df = data_xy_dist.copy()
-        x = df[df.columns[0]]
-        y = df[df.columns[1]]
+    def rotate_point(origin, point, angle):
+        # Rotate a point counterclockwise by a given angle around a given origin.
+        # The angle should be given in radians.
+
+        ox, oy = origin
+        px, py = point
+
+        qx = ox + math.cos(angle) * (px - ox) - math.sin(angle) * (py - oy)
+        qy = oy + math.sin(angle) * (px - ox) + math.cos(angle) * (py - oy)
+        return qx, qy
 
 
-        # d2 = (np.linspace(d.min(), d.max(), num = 1 + round(d.max()/10,0))).astype(int)
-        d2 = (np.linspace(d.min(), d.max(), num=5000)) # ensure smooth line with lots of points
-        fx = interp1d(d, x, kind='cubic')
-        fy = interp1d(d, y, kind='cubic')
-        fa = interp1d(d, a, kind='cubic')
+    def rotate(self, angle_deg, inplace=False):
+        xy = list(zip(self.x, self.y))
+        c = self.centre()
+        rad = -math.radians(angle_deg)
 
-        x2, y2, a2 = fx(d2), fy(d2), fa(d2)
+        x_new = []
+        y_new = []
+        for x, y in xy:
+            p = self.rotate_point(c, (x, y), rad)
+            x_new.append(p[0])
+            y_new.append(p[1])
 
-        data_interopated = pd.DataFrame({'distance':d2, 'x':x2, 'y':y2, 'alt':a2})
-        return data_interopated
-
+        if inplace:
+            self.x = np.array(x_new)
+            self.y = np.array(y_new)
+        else:
+            return Route(x_new, y_new)
 
 
 def scale_to_print(data_xy, bbox_print):
@@ -120,40 +189,8 @@ def fit_to_bbox(data_xy, bbox_print):
     df[df.columns[1]] = y
     return df
 
-def translate_to_new_origin(data_xy, origin_xy):
-    df = data_xy.copy()
-    x = df[df.columns[0]]
-    y = df[df.columns[1]]
-
-    centre = ((x.max()+x.min())/2., (y.max()+y.min())/2.)
-
-    # scale x and y
-    df['x_new'] = x - centre[0] + origin_xy[0]
-    df['y_new'] = y - centre[1] + origin_xy[1]
-
-    return df[['x_new','y_new']]
 
 
-def rotate(origin, point, angle):
-    # Rotate a point counterclockwise by a given angle around a given origin.
-    # The angle should be given in radians.
-
-    ox, oy = origin
-    px, py = point
-
-    qx = ox + math.cos(angle) * (px - ox) - math.sin(angle) * (py - oy)
-    qy = oy + math.sin(angle) * (px - ox) + math.cos(angle) * (py - oy)
-    return qx, qy
-
-
-def rotate_coords_list(x_coords_list, y_coords_list, angle_deg):
-    rad = math.radians(angle_deg)
-
-    new_coords = list()
-    for x, y in zip(x_coords_list, y_coords_list):
-        new_coords.append(rotate((0,0), (x, y), rad))
-
-    return new_coords
 
 
 def optimise_bbox(data_xy, bbox_xy):
