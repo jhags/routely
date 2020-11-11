@@ -17,6 +17,13 @@ class Route:
         self.d = self.calculate_distance()
 
 
+    def check_inputs(self):
+        # check is list
+        # check list has more than 1
+        # check x and y equal length
+        return
+
+
     def route(self):
         return list(zip(self.x, self.y, self.d))
 
@@ -27,10 +34,32 @@ class Route:
         return (lower, upper)
 
 
-    def centre(self):
+    def width(self):
+        return self.x.max() - self.x.min()
+
+
+    def height(self):
+        return self.y.max() - self.y.min()
+
+
+    def size(self):
+        '''Width and height of the route from min to max'''
+        return (self.width(), self.height())
+
+
+    def center(self):
         xc = (self.x.max() + self.x.min())/2.
         yc = (self.y.max() + self.y.min())/2.
         return (xc, yc)
+
+
+    def nr_points(self):
+        return len(self.x)
+
+
+    def close_off_route(self):
+
+        return
 
 
     def plotroute(self, markers=True):
@@ -42,10 +71,10 @@ class Route:
         else:
             marker = None
 
-        lb_lim = min(x.min(), y.min())
-        ub_lim = max(x.max(), y.max())
-        tolerance = round((ub_lim - lb_lim) * 0.05, 0)
-        limits = [lb_lim - tolerance, ub_lim + tolerance]
+        c = self.center()
+        lim = round((max(self.size())/2) * 1.1, 0)
+        x_lim = [c[0] - lim, c[0] + lim]
+        y_lim = [c[1] - lim, c[1] + lim]
 
         fig, ax = plt.subplots()
         ax.plot(x, y, 'k', marker=marker)
@@ -55,8 +84,8 @@ class Route:
         ax.set_aspect('equal', 'box')
         ax.set_xlabel('x')
         ax.set_ylabel('y')
-        ax.set_xlim(limits)
-        ax.set_ylim(limits)
+        ax.set_xlim(x_lim)
+        ax.set_ylim(y_lim)
         ax.grid(True)
 
 
@@ -111,18 +140,53 @@ class Route:
             return Route(list(xx), list(yy))
 
 
-    def reset_origin(self, new_origin=(0, 0), inplace=False):
-        centre = self.centre()
+    def add_spline(self):
+
+        return
+
+
+    def center_on_origin(self, new_origin=(0, 0), inplace=False):
+        center = self.center()
 
         # scale x and y
-        x_new = self.x - centre[0] + new_origin[0]
-        y_new = self.y - centre[1] + new_origin[1]
+        x_new = self.x - center[0] + new_origin[0]
+        y_new = self.y - center[1] + new_origin[1]
 
         if inplace:
             self.x = np.array(x_new)
             self.y = np.array(y_new)
         else:
             return Route(x_new, y_new)
+
+
+    def align_to_origin(self, origin=(0, 0), align_corner='bottomleft', inplace=False):
+        # Options: bottomleft, bottomright, topleft, topright
+
+        if align_corner == 'bottomleft':
+            corner = self.bbox()[0]
+
+        elif align_corner == 'topright':
+            corner = self.bbox()[1]
+
+        elif align_corner == 'bottomright':
+            corner = (self.bbox()[1][0], self.bbox()[0][1])
+
+        elif align_corner == 'topleft':
+            corner = (self.bbox()[0][0], self.bbox()[1][1])
+
+        else:
+            raise Exception ("Keyword argument for 'align_corner' not recognised. Please choose one from 'bottomleft', 'bottomright', 'topleft', 'topright'.")
+
+        # scale x and y
+        x_new = self.x - corner[0] + origin[0]
+        y_new = self.y - corner[1] + origin[1]
+
+        if inplace:
+            self.x = np.array(x_new)
+            self.y = np.array(y_new)
+        else:
+            return Route(x_new, y_new)
+        return
 
 
     @staticmethod
@@ -140,7 +204,7 @@ class Route:
 
     def rotate(self, angle_deg, inplace=False):
         xy = list(zip(self.x, self.y))
-        c = self.centre()
+        c = self.center()
         rad = -math.radians(angle_deg)
 
         x_new = []
@@ -162,19 +226,19 @@ class Route:
         if about_axis:
             c = (0, 0)
         elif about_axis is False:
-            c = self.centre()
+            c = self.center()
 
         if about_y:
             x_new = []
             for p in self.x:
-                x_new.append(-(p - c[0]))
+                x_new.append(c[0] + (c[0] - p))
         else:
             x_new = self.x
 
         if about_x:
             y_new = []
             for p in self.y:
-                y_new.append(-(p - c[1]))
+                y_new.append(c[1] + (c[1] - p))
         else:
             y_new = self.y
 
@@ -185,81 +249,39 @@ class Route:
             return Route(x_new, y_new)
 
 
-def scale_to_print(data_xy, bbox_print):
-    # Scale is in px not mm
-    df = data_xy.copy()
-    x = df[df.columns[0]]
-    y = df[df.columns[1]]
+    def fit_to_box(self, box_width, box_height, inplace=False):
 
-    #Scale to width or height?
-    line_width = abs(x.max() - x.min())
-    line_height = abs(y.max() - y.min())
+        #Scale factors for width and height?
+        sfactor = max(self.height()/box_height, self.width()/box_width)
 
-    sfactor = max(line_height/bbox_print[1], line_width/bbox_print[0])
+        # scale x and y
+        x_new = self.x/sfactor
+        y_new =  self.y/sfactor
 
-    # scale x and y
-    df_scaled = df/sfactor
-    return df_scaled
-
-def fit_to_bbox(data_xy, bbox_print):
-    # Scale is in px not mm
-    df = data_xy.copy()
-    x = df[df.columns[0]]
-    y = df[df.columns[1]]
-
-    #Scale factors for width and height?
-    sfactor_w = abs(x.max() - x.min())/bbox_print[0]
-    sfactor_h = abs(y.max() - y.min())/bbox_print[1]
-
-    # scale x and y
-    x,y = x/sfactor_w, y/sfactor_h
-    df[df.columns[0]] = x
-    df[df.columns[1]] = y
-    return df
+        if inplace:
+            self.x = np.array(x_new)
+            self.y = np.array(y_new)
+        else:
+            return Route(x_new, y_new)
 
 
+    def optimise_bbox(self, box_width, box_height, inplace=False):
 
+        target = box_width/box_height
 
+        angles = []
+        spatial_eff = [] # spatial efficiency
+        for angle in np.arange(0, 91, 1):
+            r_rotated = self.rotate(angle)
+            spatial_ratio = abs(r_rotated.width()/r_rotated.height())
 
-def optimise_bbox(data_xy, bbox_xy):
-    df = data_xy.copy() # format dataframe[[x, y]]
-    df.columns = ['x','y']
-    spatial_eff = list() # spatial efficiency
+            angles.append(angle)
+            spatial_eff.append(abs(spatial_ratio - target))
 
-    for angle in np.arange(5, 360, 5):
-        df_rot = rotate_coords_list(list(df['x']), list(df['y']), angle)
-        df_rot = pd.DataFrame(df_rot, columns=['x','y'])
+        angles = np.array(angles)
+        spatial_eff = np.array(spatial_eff)
 
-        dx = df_rot['x'].max() - df_rot['x'].min()
-        dy = df_rot['y'].max() - df_rot['y'].min()
-        spatial_eff.append([angle, abs(dx/dy)])
+        idx = spatial_eff.argmin()
+        angle = angles[idx]
 
-    spatial_eff = pd.DataFrame(spatial_eff, columns=['angle','ratio'])
-    spatial_eff['target'] = bbox_xy[0]/bbox_xy[1]
-    spatial_eff['efficiency'] = spatial_eff['ratio'] - spatial_eff['target']
-    spatial_eff['efficiency'] = spatial_eff['efficiency'].abs()
-    spatial_eff = spatial_eff.sort_values(by=['efficiency'], ascending=True).reset_index(drop=True)
-    # print(spatial_eff)
-    coords = rotate_coords_list(list(df['x']), list(df['y']), spatial_eff.loc[0]['angle'])
-    coords = pd.DataFrame(coords, columns=['x','y'])
-
-    return coords[['x','y']]
-
-
-def flip_coords_horizontally(data_xy):
-    df = data_xy.copy()
-    x = df[df.columns[0]]
-    y = df[df.columns[1]]
-
-    xy = scale(Polygon(list(zip(x,y))), xfact=-1, yfact=1).exterior.coords[:]
-    df[['x_new','y_new']] = pd.DataFrame(xy)
-    return df[['x_new','y_new']]
-
-def flip_coords_about_X_axis(data_xy):
-    df = data_xy.copy()
-    x = df[df.columns[0]]
-    y = df[df.columns[1]]
-
-    xy = scale(Polygon(list(zip(x,y))), xfact=1, yfact=-1).exterior.coords[:]
-    df[['x_new','y_new']] = pd.DataFrame(xy)
-    return df[['x_new','y_new']]
+        return self.rotate(angle, inplace=inplace)
