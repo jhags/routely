@@ -182,6 +182,11 @@ class Route:
             xx = np.interp(dist, d, x)
             yy = np.interp(dist, d, y)
 
+            if self.z is not None:
+                zz = np.interp(dist, d, self.z)
+            else:
+                zz = None
+
         elif kind == 'cubic':
             dist = np.linspace(d.min(), d.max(), num=num)
 
@@ -190,6 +195,12 @@ class Route:
 
             xx, yy = fx(dist), fy(dist)
 
+            if self.z is not None:
+                fz = interp1d(d, self.z, kind='cubic')
+                zz = fz(dist)
+            else:
+                zz = None
+
         else:
             raise Exception ("Keyword argument for 'kind' not recognised. Please choose one of 'steps', 'linear, or 'cubic'.")
 
@@ -197,9 +208,10 @@ class Route:
             self.x = xx
             self.y = yy
             self.d = dist
+            self.z = zz
 
         elif inplace is False:
-            return Route(list(xx), list(yy))
+            return Route(xx, yy, z=zz)
 
 
     def add_spline(self):
