@@ -10,22 +10,73 @@ from scipy.interpolate import UnivariateSpline, interp1d, interp2d
 
 
 class Route:
+    """
+    Create a Route.
 
-    def __init__(self, x=None, y=None):
+    Description
+    -----------
+    Route is designed to provide many of the common route operations and transformations to make route processing simpler and quicker.
+
+    A route is represented by a series of point coordinates on a two dimensional x-y plane. Z-axis data can be specified as well, however the primary focus of these common transformations are based on the x-y plane data with z-axis data being transformed accordingly.
+
+    The primary focus is on x-y plane data because z-axis data does not have to represent a path through three dimensional space, rather z-data can represent additonal layers of route data that correspond to the x-y path.
+
+    For example, a runner may be tracking pace or heartrate, an aeroplane will have changes in fuel consumption, etc. Therefore, transformations are primarily concerned with the x-y route taken.
+
+    Args
+    ----
+    x (array-like) : List or array of x-coordinates of the route.
+
+    y (array-like) : List or array of y-coordinates of the route.
+
+    z (array-like, optional) : List or array of z data for the route. This does not need to be elevation, but any data corresponding to the route in the x-y plane. Defaults to None.
+    """
+
+    def __init__(self, x, y, z=None):
         self.x = np.array(x)
         self.y = np.array(y)
-        self.d = self.calculate_distance()
+        self.z = np.array(z)
+
+        self._check_inputs()
+
+        self.d = self._calculate_distance()
 
 
-    def check_inputs(self):
-        # check is list
-        # check list has more than 1
-        # check x and y equal length
-        return
+    def _check_inputs(self):
+        """
+        Check Route argument inputs and raise exceptions where necessary.
+        """
+
+        len_x, len_y = len(self.x), len(self.y)
+
+        # Check x and y have more than 1 item
+        assert (len_x > 1), "Route input 'x' must contain more than 1 item"
+        assert (len_y > 1), "Route input 'y' must contain more than 1 item"
+
+        # Check x and y are equal length
+        assert (len_x == len_y), "Route inputs 'x' and 'y' must be of equal length"
+
+        # Check x, y and z are int or float dtypes
+        # ie do not contain any unusable values like strings
+        assert (self.x.dtype in [np.int, np.float]), "Route input 'x' must be either int or float dtypes"
+        assert (self.y.dtype in [np.int, np.float]), "Route input 'x' must be either int or float dtypes"
+
+        # Performs checks on z if not empty
+        if self.z.shape:
+            assert (len(self.z) == len_x), "Route input 'z' must be of equal length to 'x' and 'y'"
+            assert (self.z.dtype in [np.int, np.float]), "Route input 'x' must be either int or float dtypes"
+        else:
+            self.z = None
 
 
     def route(self):
-        return list(zip(self.x, self.y, self.d))
+        """
+        Returns route data in list form -> [(x, y, z, distance)]. z will be included if specified as an input arguement.
+        """
+        if self.z is not None:
+            return list(zip(self.x, self.y, self.z, self.d))
+        else:
+            return list(zip(self.x, self.y, self.d))
 
 
     def bbox(self):
@@ -43,7 +94,9 @@ class Route:
 
 
     def size(self):
-        '''Width and height of the route from min to max'''
+        """
+        Returns the width and height (w, h) of the route along the x and y axes.
+        """
         return (self.width(), self.height())
 
 
@@ -89,7 +142,7 @@ class Route:
         ax.grid(True)
 
 
-    def calculate_distance(self):
+    def _calculate_distance(self):
         xy = list(zip(self.x, self.y))
 
         dist = [0]
@@ -101,6 +154,15 @@ class Route:
 
     @staticmethod
     def distance_between_two_points(p1, p2):
+        """[summary]
+
+        Args:
+            p1 ([type]): [description]
+            p2 ([type]): [description]
+
+        Returns:
+            [type]: [description]
+        """
         ''' distance between two points (tuples) '''
         return math.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
 
@@ -190,7 +252,7 @@ class Route:
 
 
     @staticmethod
-    def rotate_point(origin, point, angle):
+    def _rotate_point(origin, point, angle):
         # Rotate a point counterclockwise by a given angle around a given origin.
         # The angle should be given in radians.
 
@@ -210,7 +272,7 @@ class Route:
         x_new = []
         y_new = []
         for x, y in xy:
-            p = self.rotate_point(c, (x, y), rad)
+            p = self._rotate_point(c, (x, y), rad)
             x_new.append(p[0])
             y_new.append(p[1])
 
