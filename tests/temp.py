@@ -12,14 +12,20 @@ y = [0, 10, 40, 10, 5]
 z = [0, 10, 40, 10, 5]
 
 r = Route(x, y, z)
+r.plotroute()
+r.d
 
-# r.plotroute()
+r2 = r.interoplate(kind='cubic', num=20, inplace=False)
+r2.plotroute()
+r2.d
+r2.bbox()
+r2.route()
 
 
 # r.fit_to_box(200, 200, inplace=True)
 # r.plotroute()
 
-# r.interoplate(kind='cubic', num=100, inplace=True)
+r.interoplate(kind='cubic', num=100, inplace=True)
 # r.plotroute()
 
 # r.optimise_bbox(200, 200, inplace=True)
