@@ -10,9 +10,11 @@ class routely_test(unittest.TestCase):
     def setUp(self):
         self.x = [0, 5, 15, 20, 10]
         self.y = [0, 10, 40, 10, 5]
-        self.z = [0, 10, 40, 10, 5]
+        self.z = {
+            'foo':[0, 10, 40, 10, 5]
+        }
 
-        self.r = Route(self.x, self.y, self.z)
+        self.r = Route(self.x, self.y, z=self.z)
 
 
     def test_distance_between_two_points(self):

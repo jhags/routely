@@ -32,11 +32,11 @@ class Route:
     z (array-like, optional) : List or array of z data for the route. This does not need to be elevation, but any data corresponding to the route in the x-y plane. Defaults to None.
     """
 
-    def __init__(self, x, y, z=None, z_labels=None):
+    def __init__(self, x, y, z=None):
         self.x = x
         self.y = y
         self.z = z
-        self.z_labels = z_labels
+        # self.z_labels = z_labels
 
         self._prep_inputs()
 
@@ -52,10 +52,8 @@ class Route:
             self.y = np.array(self.y)
 
         if self.z is not None:
-            self.z = np.array(self.z)
-
-        if self.z_labels is not None:
-            self.z_labels = np.array(self.z_labels)
+            for k in self.z.keys():
+                self.z[k] = np.array(self.z[k])
 
 
     def _check_inputs(self):
@@ -79,9 +77,10 @@ class Route:
 
         # Performs checks on z if not empty
         if self.z is not None:
-            assert (self.z.shape[-1] == len_x), "Route input 'z' must be of equal length to 'x' and 'y'"
-            assert (self.z.dtype in [np.int, np.float]), "Route input 'x' must be either int or float dtypes"
-            assert (self.z_labels.shape[-1] == self.z.shape[0]), "Route input 'z_labels' length must match 'z' shape"
+            for v in self.z.values():
+                assert (len(v) == len_x), "Route input 'z' must be of equal length to 'x' and 'y'"
+                assert (v.dtype in [np.int, np.float]), "Route input 'x' must be either int or float dtypes"
+
 
     def route(self):
         """
@@ -129,7 +128,7 @@ class Route:
         return
 
 
-    def plotroute(self, markers=True):
+    def plotroute(self, markers=True, equal_aspect=True, equal_lims=True):
         x = self.x
         y = self.y
 
@@ -148,12 +147,18 @@ class Route:
 
         fig.tight_layout()
 
-        ax.set_aspect('equal', 'box')
+        if equal_aspect:
+            ax.set_aspect('equal', 'box')
+
+        if equal_lims:
+            ax.set_xlim(x_lim)
+            ax.set_ylim(y_lim)
+
         ax.set_xlabel('x')
         ax.set_ylabel('y')
-        ax.set_xlim(x_lim)
-        ax.set_ylim(y_lim)
+
         ax.grid(True)
+
 
     def plot_z(self, markers=True):
         if self.z is None:
@@ -164,15 +169,17 @@ class Route:
         else:
             marker = None
 
-        nr_plots = self.z.shape[0]
+        nr_plots = len(self.z)
 
-        fig, axs = plt.subplots(nr_plots, sharex=True)
+        fig, _ = plt.subplots(nr_plots, sharex=True)
 
-        for idx, z_data in enumerate(self.z):
-            axs[idx].plot(self.d, z_data, 'k', marker=marker)
-            axs[idx].set(xlabel='d', ylabel=self.z_labels[idx])
-            axs[idx].grid(True)
-            axs[idx].label_outer()
+        for idx, ax in enumerate(fig.axes):
+            label = list(self.z.keys())[idx]
+            z_data = list(self.z.values())[idx]
+            ax.plot(self.d, z_data, 'k', marker=marker)
+            ax.set(xlabel='d', ylabel=label)
+            ax.grid(True)
+            ax.label_outer()
 
         fig.tight_layout()
 
@@ -231,7 +238,9 @@ class Route:
             yy = np.interp(dist, d, y)
 
             if self.z is not None:
-                zz = np.interp(dist, d, self.z)
+                zz = {}
+                for k, v in self.z.items():
+                    zz[k] = np.interp(dist, d, v)
             else:
                 zz = None
 
@@ -244,8 +253,10 @@ class Route:
             xx, yy = fx(dist), fy(dist)
 
             if self.z is not None:
-                fz = interp1d(d, self.z, kind='cubic')
-                zz = fz(dist)
+                zz = {}
+                for k, v in self.z.items():
+                    fz = interp1d(d, v, kind='cubic')
+                    zz[k] = fz(dist)
             else:
                 zz = None
 
@@ -277,6 +288,7 @@ class Route:
         if inplace:
             self.x = np.array(x_new)
             self.y = np.array(y_new)
+            self.d = self._calculate_distance()
         else:
             return Route(x_new, y_new)
 
@@ -306,9 +318,9 @@ class Route:
         if inplace:
             self.x = np.array(x_new)
             self.y = np.array(y_new)
+            self.d = self._calculate_distance()
         else:
             return Route(x_new, y_new)
-        return
 
 
     @staticmethod
@@ -339,6 +351,7 @@ class Route:
         if inplace:
             self.x = np.array(x_new)
             self.y = np.array(y_new)
+            self.d = self._calculate_distance()
         else:
             return Route(x_new, y_new)
 
@@ -367,22 +380,31 @@ class Route:
         if inplace:
             self.x = np.array(x_new)
             self.y = np.array(y_new)
+            self.d = self._calculate_distance()
         else:
             return Route(x_new, y_new)
 
 
-    def fit_to_box(self, box_width, box_height, inplace=False):
+    def fit_to_box(self, box_width, box_height, keep_aspect=True, inplace=False):
 
-        #Scale factors for width and height?
-        sfactor = max(self.height()/box_height, self.width()/box_width)
+        #Scale factors for width and height
+        if keep_aspect:
+            sfactor = max(self.height()/box_height, self.width()/box_width)
+            sfactor_x = sfactor
+            sfactor_y = sfactor
+
+        elif keep_aspect is False:
+            sfactor_x = abs(self.width()/box_width)
+            sfactor_y = abs(self.height()/box_height)
 
         # scale x and y
-        x_new = self.x/sfactor
-        y_new =  self.y/sfactor
+        x_new = self.x/sfactor_x
+        y_new = self.y/sfactor_y
 
         if inplace:
             self.x = np.array(x_new)
             self.y = np.array(y_new)
+            self.d = self._calculate_distance()
         else:
             return Route(x_new, y_new)
 
