@@ -63,7 +63,7 @@ class routely_test(unittest.TestCase):
 
     def test_interpolate_steps(self):
         num = 2
-        r2 = self.r.interoplate(kind='steps', num=num, inplace=False)
+        r2 = self.r.interoplate(kind='equidistant_steps', num=num, inplace=False)
 
         # check start and end coords
         r1_start_coord = (self.r.x[0], self.r.y[0])
@@ -83,7 +83,7 @@ class routely_test(unittest.TestCase):
 
     def test_interpolate_linear(self):
         num = 20
-        r2 = self.r.interoplate(kind='linear', num=num, inplace=False)
+        r2 = self.r.interoplate(kind='absolute_steps', num=num, inplace=False)
 
         # check start and end coords
         r1_start_coord = (self.r.x[0], self.r.y[0])

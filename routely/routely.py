@@ -21,7 +21,7 @@ class Route:
 
     The primary focus is on x-y plane data because z-axis data does not have to represent a path through three dimensional space, rather z-data can represent additonal layers of route data that correspond to the x-y path.
 
-    For example, a runner may be tracking pace or heartrate, an aeroplane will have changes in fuel consumption, etc. Therefore, transformations are primarily concerned with the x-y route taken.
+    For example, a runner may be tracking pace or heartrate, a car will have changes in speed, etc. Therefore, transformations are primarily concerned with the x-y route taken.
 
     Args
     ----
@@ -32,14 +32,30 @@ class Route:
     z (array-like, optional) : List or array of z data for the route. This does not need to be elevation, but any data corresponding to the route in the x-y plane. Defaults to None.
     """
 
-    def __init__(self, x, y, z=None):
-        self.x = np.array(x)
-        self.y = np.array(y)
-        self.z = np.array(z)
+    def __init__(self, x, y, z=None, z_labels=None):
+        self.x = x
+        self.y = y
+        self.z = z
+        self.z_labels = z_labels
+
+        self._prep_inputs()
 
         self._check_inputs()
 
         self.d = self._calculate_distance()
+
+    def _prep_inputs(self):
+        if self.x is not None:
+            self.x = np.array(self.x)
+
+        if self.y is not None:
+            self.y = np.array(self.y)
+
+        if self.z is not None:
+            self.z = np.array(self.z)
+
+        if self.z_labels is not None:
+            self.z_labels = np.array(self.z_labels)
 
 
     def _check_inputs(self):
@@ -62,12 +78,10 @@ class Route:
         assert (self.y.dtype in [np.int, np.float]), "Route input 'x' must be either int or float dtypes"
 
         # Performs checks on z if not empty
-        if self.z.shape:
-            assert (len(self.z) == len_x), "Route input 'z' must be of equal length to 'x' and 'y'"
+        if self.z is not None:
+            assert (self.z.shape[-1] == len_x), "Route input 'z' must be of equal length to 'x' and 'y'"
             assert (self.z.dtype in [np.int, np.float]), "Route input 'x' must be either int or float dtypes"
-        else:
-            self.z = None
-
+            assert (self.z_labels.shape[-1] == self.z.shape[0]), "Route input 'z_labels' length must match 'z' shape"
 
     def route(self):
         """
@@ -141,6 +155,27 @@ class Route:
         ax.set_ylim(y_lim)
         ax.grid(True)
 
+    def plot_z(self, markers=True):
+        if self.z is None:
+            print('No z data provided')
+
+        if markers:
+            marker = 'o'
+        else:
+            marker = None
+
+        nr_plots = self.z.shape[0]
+
+        fig, axs = plt.subplots(nr_plots, sharex=True)
+
+        for idx, z_data in enumerate(self.z):
+            axs[idx].plot(self.d, z_data, 'k', marker=marker)
+            axs[idx].set(xlabel='d', ylabel=self.z_labels[idx])
+            axs[idx].grid(True)
+            axs[idx].label_outer()
+
+        fig.tight_layout()
+
 
     def _calculate_distance(self):
         xy = list(zip(self.x, self.y))
@@ -167,16 +202,29 @@ class Route:
         return math.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
 
 
-    def interoplate(self, kind='steps', num=1, inplace=False):
+    def interoplate(self, kind='equidistant_steps', num=1, inplace=False):
+        """[summary]
+
+        Args:
+            kind (str, optional): Please choose one of 'steps', 'linear, or 'cubic'. Defaults to 'steps'.
+            num (int, optional): [description]. Defaults to 1.
+            inplace (bool, optional): [description]. Defaults to False.
+
+        Raises:
+            Exception: [description]
+
+        Returns:
+            [type]: [description]
+        """
         x = self.x
         y = self.y
         d = self.d
 
-        if (kind == 'steps') | (kind == 'linear'):
-            if kind == 'steps':
+        if (kind == 'equidistant_steps') | (kind == 'absolute_steps'):
+            if kind == 'equidistant_steps':
                 dist = list(np.arange(d.min(), d.max()+num, step=num))
 
-            elif kind == 'linear':
+            elif kind == 'absolute_steps':
                 dist = list(np.linspace(d.min(), d.max(), num=num))
 
             xx = np.interp(dist, d, x)
@@ -202,7 +250,7 @@ class Route:
                 zz = None
 
         else:
-            raise Exception ("Keyword argument for 'kind' not recognised. Please choose one of 'steps', 'linear, or 'cubic'.")
+            raise Exception ("Keyword argument for 'kind' not recognised. Please choose one of 'equidistant_steps', 'absolute_steps', or 'cubic'")
 
         if inplace:
             self.x = xx
