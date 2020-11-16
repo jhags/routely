@@ -160,13 +160,14 @@ class Route:
     #     return
 
 
-    def plotroute(self, markers=True, equal_aspect=True, equal_lims=True):
+    def plotroute(self, markers=True, equal_aspect=True, equal_lims=True, canvas_style=False):
         """Plot the route (x vs y).
 
         Args:
             markers (bool, optional): Choose to display markers. Defaults to True.
             equal_aspect (bool, optional): Choose to maintain an equal aspect ration in the plot. Defaults to True.
             equal_lims (bool, optional): Choose to display equal x and y limits. Defaults to True.
+            canvas_Style (bool, optional): Create a canvas style plot by removing all chart axes. Defails to False.
         """
 
         if markers:
@@ -195,9 +196,13 @@ class Route:
             ax.set_ylim(y_lim)
 
         # Axis formating
-        ax.set_xlabel('x')
-        ax.set_ylabel('y')
-        ax.grid(True)
+        if canvas_style is False:
+            ax.set_xlabel('x')
+            ax.set_ylabel('y')
+            ax.grid(True)
+
+        elif canvas_style:
+            ax.set_axis_off()
 
 
     def plot_z(self, markers=True):
@@ -275,8 +280,6 @@ class Route:
 
         > 'absolute_steps': the total number of points along the full route as specified by 'num' arg. The spacing of the points will be linear along the length of the route using np.linspace.
 
-        > 'cubic': cubic interpolation uses the same method as 'absolute_steps' to linearly space a chosen number of points, but uses a cubic formula to smooth the route as well.
-
         Note, in all cases, the total route distance may vary from the original but the start and end coordinates will remain the same.
 
         Args:
@@ -292,52 +295,32 @@ class Route:
         d = self.d
 
         # cubic requires a different calculation, so check the kind first
-        if (kind == 'equidistant_steps') | (kind == 'absolute_steps'):
-            if kind == 'equidistant_steps':
-                # New list of distance points to interpolate Route data against
-                dist = list(np.arange(d.min(), d.max()+num, step=num))
+        if not (kind == 'equidistant_steps') | (kind == 'absolute_steps'):
+            raise Exception ("Keyword argument for 'kind' not recognised. See docs for options.")
 
-            elif kind == 'absolute_steps':
-                # New list of distance points to interpolate Route data against
-                dist = list(np.linspace(d.min(), d.max(), num=num))
 
-            # Interpolate x and y wrt to d against the new list of distanced points
-            xx = np.interp(dist, d, x)
-            yy = np.interp(dist, d, y)
+        if kind == 'equidistant_steps':
+            # New list of distance points to interpolate Route data against
+            dist = list(np.arange(d.min(), d.max()+num, step=num))
 
-            # interpolate z too if it exists
-            if self.z is not None:
-                # Start a new dict of z-axis data
-                zz = {}
-                # for each, interpolate and add to the new dict
-                for k, v in self.z.items():
-                    zz[k] = np.interp(dist, d, v)
-            else:
-                zz = None
+        elif kind == 'absolute_steps':
+            # New list of distance points to interpolate Route data against
+            dist = list(np.linspace(d.min(), d.max(), num=num))
 
-        # for cubic method only
-        elif kind == 'cubic':
-            # Use linspace to get a new list of distanced points
-            dist = np.linspace(d.min(), d.max(), num=num)
+        # Interpolate x and y wrt to d against the new list of distanced points
+        xx = np.interp(dist, d, x)
+        yy = np.interp(dist, d, y)
 
-            # interpolation functions for x and y wrt to d
-            fx = interp1d(d, x, kind='cubic')
-            fy = interp1d(d, y, kind='cubic')
-
-            # apply function to distanced points
-            xx, yy = fx(dist), fy(dist)
-
-            # repeat for z if it exists
-            if self.z is not None:
-                zz = {}
-                for k, v in self.z.items():
-                    fz = interp1d(d, v, kind='cubic')
-                    zz[k] = fz(dist)
-            else:
-                zz = None
-
+        # interpolate z too if it exists
+        if self.z is not None:
+            # Start a new dict of z-axis data
+            zz = {}
+            # for each, interpolate and add to the new dict
+            for k, v in self.z.items():
+                zz[k] = np.interp(dist, d, v)
         else:
-            raise Exception ("Keyword argument for 'kind' not recognised. Please choose one of 'equidistant_steps', 'absolute_steps', or 'cubic'")
+            zz = None
+
 
         if inplace:
             self.x = xx
@@ -352,6 +335,52 @@ class Route:
     # def add_spline(self):
 
     #     return
+
+    def smooth(self, smoothing_factor, inplace=False):
+        """Smooth the route using cubic interpolation by varying the smoothing factor from 0 to 1.
+
+        The smoothing factor dictates how much smoothing will be applied. The number of route coordinate points are reduced by the product of the factor (ie the total number of coordinate points multiplied by the smoothing factor). With a reduced number of points, the route is smoothed using Scipy's cubic interpolation. Consquently, the lower the factor, the fewer coordinate points and the higher level of smoothing. The smoothing factor must be greater than 0 and less than or equal to 1.0.
+
+        Args:
+            smoothing_factor (float): level of smoothing to apply between 0 (max smoothing) and 1 (no smoothing). Must be greater than 0.
+            inplace (bool, optional): If True, modify Route attributes in place. If False, return a new Route object. Defaults to False.
+
+        Returns:
+            Route: Return a new Route object if inplace is False.
+        """
+        nr_points = int(self.nr_points() * smoothing_factor)
+        #int((self.d.max()/2)/self.nr_points()/(1 - smoothing_factor))
+
+        #interpolate first
+        r = self.interoplate(kind='equidistant_steps', num=nr_points, inplace=False)
+
+        # Use linspace to get a new list of distanced points
+        dist = np.linspace(r.d.min(), r.d.max(), num=5000)
+
+        # interpolation functions for x and y wrt to d
+        fx = interp1d(r.d, r.x, kind='cubic')
+        fy = interp1d(r.d, r.y, kind='cubic')
+
+        # apply function to distanced points
+        xx, yy = fx(dist), fy(dist)
+
+        # repeat for z if it exists
+        if self.z is not None:
+            zz = {}
+            for k, v in r.z.items():
+                fz = interp1d(r.d, v, kind='cubic')
+                zz[k] = fz(dist)
+        else:
+            zz = None
+
+        if inplace:
+            self.x = xx
+            self.y = yy
+            self.d = np.array(dist)
+            self.z = zz
+
+        elif inplace is False:
+            return Route(xx, yy, z=zz)
 
 
     def center_on_origin(self, new_origin=(0, 0), inplace=False):
