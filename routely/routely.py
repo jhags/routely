@@ -342,7 +342,7 @@ class Route:
         if inplace:
             self.x = xx
             self.y = yy
-            self.d = dist
+            self.d = np.array(dist)
             self.z = zz
 
         elif inplace is False:
