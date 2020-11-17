@@ -1,14 +1,17 @@
 ''' Routely tests '''
 # Packages
+import json
+
 import numpy as np
 import pandas as pd
 from routely import Route
 
-# %load_ext autoreload
-#%%
-# %autoreload 2
-x = [0, 5, 15, 20, 10]
-y = [0, 10, 40, 10, 5]
+with open('test_dataset1.json', 'r') as fp:
+    data = json.load(fp)
+
+
+x = [0, 5, 5, 20, 10]
+y = [0, 10, 10, 10, 5]
 
 z = {
     'foo':[0, 5, 15, 20, 10],
@@ -16,23 +19,11 @@ z = {
     # 'car':[0, 10, 40, 10, 5]
 }
 
+x = data['x']
+y = data['y']
+z = {list(data.keys())[-1]: data[list(data.keys())[-1]]}
+
 r = Route(x, y, z=z)
-r.plotroute()
-# r.plot_z()
-
-r.fit_to_box(20, 20, keep_aspect=True, inplace=True)
-# r.plotroute()
-
-r.interoplate(kind='cubic', num=100, inplace=True)
-# r.plotroute()
-
-r.optimise_bbox(200, 200, inplace=True)
-# r.plotroute()
-
-r.align_to_origin(align_corner='topleft', inplace=True)
-r.plotroute()
-r.plot_z()
-
-p = Route(r.d, r.z['foo'])
-p.fit_to_box(10, 1, keep_aspect=False, inplace=True)
-p.plotroute(markers=False, equal_lims=False)
+r.center_on_origin(inplace=True)
+r.plotroute(markers=False)
+r.plot_z(markers=False)
