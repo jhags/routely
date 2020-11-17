@@ -275,6 +275,39 @@ class Route:
         return math.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
 
 
+    def clean_coordinates(self, inplace=False):
+        """Clean the coordinate lists by removing duplicate x and y values. This is done by finding the intersection between a unique index list of x and a unique list of y, and returning the correspondong coordinates for x, y and z data.
+
+        Args:
+            inplace (bool, optional): If True, modify Route attributes in place. If False, return a new Route object. Defaults to False.
+
+        Returns:
+            Route: Return a new Route object if inplace is False.
+        """
+        idx_x = set(np.unique(self.x, return_index=True)[1])
+        idx_y = set(np.unique(self.y, return_index=True)[1])
+        idx = idx_x.intersection(idx_y)
+        new_x = self.x[list(idx)]
+        new_y = self.y[list(idx)]
+
+        if self.z is not None:
+            # for each z, interpolate and add to the new dict
+            zz = {}
+            for k, v in self.z.items():
+                zz[k] = v[list(idx)]
+        else:
+            zz = None
+
+        if inplace:
+            self.x = new_x
+            self.y = new_y
+            self.d = self._calculate_distance()
+            self.z = zz
+
+        elif inplace is False:
+            return Route(new_x, new_y, z=zz)
+
+
     def interoplate(self, kind='equidistant_steps', num=1, inplace=False):
         """
         Interpolate Route x and y coordinate lists given various interpolation stategies.
@@ -341,23 +374,29 @@ class Route:
 
     #     return
 
-    def smooth(self, smoothing_factor, inplace=False):
+    def smooth(self, smoothing_factor=None, inplace=False):
         """Smooth the route using cubic interpolation by varying the smoothing factor from 0 to 1.
 
-        The smoothing factor dictates how much smoothing will be applied. The number of route coordinate points are reduced by the product of the factor (ie the total number of coordinate points multiplied by the smoothing factor). With a reduced number of points, the route is smoothed using Scipy's cubic interpolation. Consquently, the lower the factor, the fewer coordinate points and the higher level of smoothing. The smoothing factor must be greater than 0 and less than or equal to 1.0.
+        The smoothing factor dictates how much smoothing will be applied. The factor reduces the number of route coordinate points relative to the mean change in distance between coordinates. With a reduced number of points, the route is smoothed using Scipy's cubic interpolation. Consquently, the higher the factor, the fewer coordinate points and the higher level of smoothing. The smoothing factor must be greater than or equal to 0 and less than 1.0.
 
         Args:
-            smoothing_factor (float): level of smoothing to apply between 0 (max smoothing) and 1 (no smoothing). Must be greater than 0.
+            smoothing_factor (float): level of smoothing to apply between 0 (no smoothing) and 1 (max smoothing). Must be less than 1.
             inplace (bool, optional): If True, modify Route attributes in place. If False, return a new Route object. Defaults to False.
 
         Returns:
             Route: Return a new Route object if inplace is False.
         """
-        nr_points = int(self.nr_points() * smoothing_factor)
-        #int((self.d.max()/2)/self.nr_points()/(1 - smoothing_factor))
+        if smoothing_factor is not None:
+            nr_points = int(np.diff(self.d).mean()/(1 - smoothing_factor))
 
-        #interpolate first
-        r = self.interoplate(kind='equidistant_steps', num=nr_points, inplace=False)
+            #interpolate first
+            r = self.interoplate(kind='equidistant_steps', num=nr_points, inplace=False)
+
+        else:
+            # if none, simply interpolate through the existing coord points
+            r = self.copy()
+            # clean coords list first. Interpolation cannot handle duplicate values in the list.
+            r.clean_coordinates(inplace=True)
 
         # Use linspace to get a new list of distanced points
         dist = np.linspace(r.d.min(), r.d.max(), num=5000)
