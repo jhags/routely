@@ -100,8 +100,8 @@ class routely_test(unittest.TestCase):
         self.assertEqual(20, len(r2.d))
 
     def test_interpolate_cubic(self):
-        num = 20
-        r2 = self.r.interoplate(kind='cubic', num=num, inplace=False)
+
+        r2 = self.r.smooth(0.9, inplace=False)
 
         # check start and end coords
         r1_start_coord = (self.r.x[0], self.r.y[0])
@@ -112,5 +112,15 @@ class routely_test(unittest.TestCase):
         r2_end_coord = (r2.x[-1], r2.y[-1])
         self.assertEqual(r1_end_coord, r2_end_coord)
 
-        # check number of points in interpolated list
-        self.assertEqual(20, len(r2.d))
+
+    def test_copy(self):
+
+        # Take a copy
+        route_copy = self.r.copy()
+
+        # modify that copy
+        route_copy.align_to_origin(origin=(10, 10), inplace=True)
+
+        # compare x and y
+        self.assertNotEqual(list(route_copy.x), list(self.r.x))
+        self.assertNotEqual(list(route_copy.y), list(self.r.y))

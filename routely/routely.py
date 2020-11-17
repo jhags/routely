@@ -1,12 +1,13 @@
 ''' Routely '''
 
 import math
+import copy
 
 import matplotlib.pyplot as plt
 import numpy as np
 
 from matplotlib.ticker import MultipleLocator
-from scipy.interpolate import UnivariateSpline, interp1d
+from scipy.interpolate import interp1d
 
 
 class Route:
@@ -83,6 +84,10 @@ class Route:
             for v in self.z.values():
                 assert (len(v) == len_x), "Route input 'z' must be of equal length to 'x' and 'y'"
                 assert (v.dtype in [np.int, np.float]), "Route input 'x' must be either int or float dtypes"
+
+
+    def copy(self):
+        return copy.copy(self)
 
 
     def route(self):
