@@ -2,7 +2,7 @@
 # Packages
 import numpy as np
 import unittest
-from routely.routely import Route
+from routely import Route
 
 
 class routely_test(unittest.TestCase):
