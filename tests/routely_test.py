@@ -99,18 +99,19 @@ class routely_test(unittest.TestCase):
         # check number of points in interpolated list
         self.assertEqual(20, len(r2.d))
 
-    def test_interpolate_cubic(self):
 
-        r2 = self.r.smooth(0.9, inplace=False)
+    # def test_interpolate_cubic(self):
 
-        # check start and end coords
-        r1_start_coord = (self.r.x[0], self.r.y[0])
-        r2_start_coord = (r2.x[0], r2.y[0])
-        self.assertEqual(r1_start_coord, r2_start_coord)
+    #     r2 = self.r.smooth(0.9, inplace=False)
 
-        r1_end_coord = (self.r.x[-1], self.r.y[-1])
-        r2_end_coord = (r2.x[-1], r2.y[-1])
-        self.assertEqual(r1_end_coord, r2_end_coord)
+    #     # check start and end coords
+    #     r1_start_coord = (self.r.x[0], self.r.y[0])
+    #     r2_start_coord = (r2.x[0], r2.y[0])
+    #     self.assertEqual(r1_start_coord, r2_start_coord)
+
+    #     r1_end_coord = (self.r.x[-1], self.r.y[-1])
+    #     r2_end_coord = (r2.x[-1], r2.y[-1])
+    #     self.assertEqual(r1_end_coord, r2_end_coord)
 
 
     def test_copy(self):
@@ -124,3 +125,12 @@ class routely_test(unittest.TestCase):
         # compare x and y
         self.assertNotEqual(list(route_copy.x), list(self.r.x))
         self.assertNotEqual(list(route_copy.y), list(self.r.y))
+
+
+    def test_center_on_origin(self):
+        r2 = self.r.center_on_origin(new_origin=(0, 0))
+
+        self.assertEqual((0, 0), r2.center())
+        self.assertEqual(self.r.size(), r2.size())
+        self.assertEqual(self.r.nr_points(), r2.nr_points())
+        self.assertNotEqual(self.r.center(), r2.center())
