@@ -4,11 +4,28 @@ import numpy as np
 import pytest
 from routely import Route
 
+
 def _setup():
     x = [0, 5, 15, 20, 10]
     y = [0, 10, 40, 10, 5]
     z = {'foo':[0, 10, 40, 10, 5]}
     return Route(x, y, z=z)
+
+
+def test_check_inputs():
+    x = [1, 2, '3']
+    y = [4, 5, 6]
+    with pytest.raises(AssertionError):
+        Route(x,y)
+
+
+# def test_route():
+#     r = _setup()
+#     e
+
+def test_nr_points():
+    r = _setup()
+    assert len(r.x) == r.nr_points()
 
 
 def test_distance_between_two_points():
