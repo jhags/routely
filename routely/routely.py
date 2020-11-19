@@ -40,14 +40,15 @@ class Route:
         self.z = z
 
         self._prep_inputs()
-
-        self._check_inputs()
+        self._check_inputlengths()
+        self._check_inputvalues()
 
         self.d = self._calculate_distance()
 
 
     def _prep_inputs(self):
-        """Convert args to array if not none.
+        """
+        Convert args to array if not none.
         """
         if self.x is not None:
             self.x = np.array(self.x)
@@ -60,30 +61,44 @@ class Route:
                 self.z[k] = np.array(self.z[k])
 
 
-    def _check_inputs(self):
+    def _check_inputlengths(self):
         """
-        Check Route argument inputs and raise exceptions where necessary.
+        Check input args lengths meet requirements
         """
+        # Check x and y have more than 1 item, and x and y are equal length
+        if not len(self.x) > 1:
+            raise ValueError("Route input 'x' must contain more than 1 item")
 
-        len_x, len_y = len(self.x), len(self.y)
+        if not (len(self.y) > 1):
+            raise ValueError("Route input 'y' must contain more than 1 item")
 
-        # Check x and y have more than 1 item
-        assert (len_x > 1), "Route input 'x' must contain more than 1 item"
-        assert (len_y > 1), "Route input 'y' must contain more than 1 item"
-
-        # Check x and y are equal length
-        assert (len_x == len_y), "Route inputs 'x' and 'y' must be of equal length"
-
-        # Check x, y and z are int or float dtypes
-        # ie do not contain any unusable values like strings
-        assert (self.x.dtype in [np.int, np.float]), "Route input 'x' must be either int or float dtypes"
-        assert (self.y.dtype in [np.int, np.float]), "Route input 'x' must be either int or float dtypes"
+        if not (len(self.x) == len(self.y)):
+            raise ValueError("Route inputs 'x' and 'y' must be of equal length")
 
         # Performs checks on z if not empty
         if self.z is not None:
             for v in self.z.values():
-                assert (len(v) == len_x), "Route input 'z' must be of equal length to 'x' and 'y'"
-                assert (v.dtype in [np.int, np.float]), "Route input 'x' must be either int or float dtypes"
+                if not (len(v) == len(self.x)):
+                    raise ValueError("Route input 'z' must be of equal length to 'x' and 'y'")
+
+
+    def _check_inputvalues(self):
+        """
+        Check Route argument inputs and raise exceptions where necessary.
+        """
+        # Check x, y and z are int or float dtypes
+        # ie do not contain any unusable values like strings
+        if not (self.x.dtype in [np.int, np.float]):
+            raise TypeError("Route input 'x' must be either int or float dtypes")
+
+        if not (self.y.dtype in [np.int, np.float]):
+            raise TypeError("Route input 'x' must be either int or float dtypes")
+
+        # Performs checks on z if not empty
+        if self.z is not None:
+            for v in self.z.values():
+                if not (v.dtype in [np.int, np.float]):
+                    raise TypeError("Route input 'x' must be either int or float dtypes")
 
 
     def copy(self):

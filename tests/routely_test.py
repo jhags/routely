@@ -12,12 +12,50 @@ def _setup():
     return Route(x, y, z=z)
 
 
-def test_check_inputs():
+def test_check_inputlengths():
+    x = [1, 2, 3, 4]
+    y = [4, 5, 6]
+    with pytest.raises(ValueError):
+        Route(x, y)
+
+    x = [1, 2, 3]
+    y = [4, 5, 6, 7]
+    with pytest.raises(ValueError):
+        Route(x, y)
+
+    x = [1]
+    y = [4, 5, 6, 7]
+    with pytest.raises(ValueError):
+        Route(x, y)
+
+    x = [1, 2, 3, 4]
+    y = [4]
+    with pytest.raises(ValueError):
+        Route(x, y)
+
+    x = [1, 2, 3, 4]
+    y = [4, 5, 6, 7]
+    z = {'foo': [8, 9]}
+    with pytest.raises(ValueError):
+        Route(x, y, z=z)
+
+
+def test_check_inputvalues():
     x = [1, 2, '3']
     y = [4, 5, 6]
-    with pytest.raises(AssertionError):
-        Route(x,y)
+    with pytest.raises(TypeError):
+        Route(x, y)
 
+    x = [1, 2, 3]
+    y = [4, '5', 6]
+    with pytest.raises(TypeError):
+        Route(x, y)
+
+    x = [1, 2, 3, 4]
+    y = [4, 5, 6, 7]
+    z = {'foo': [8, '9', 10, 11]}
+    with pytest.raises(TypeError):
+        Route(x, y, z=z)
 
 # def test_route():
 #     r = _setup()
