@@ -390,6 +390,7 @@ class Route:
 
     #     return
 
+
     def smooth(self, smoothing_factor=None, inplace=False):
         """Smooth the route using cubic interpolation by varying the smoothing factor from 0 to 1.
 
