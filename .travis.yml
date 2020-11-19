@@ -9,8 +9,11 @@ python:
 # command to install dependencies
 install:
   - pip install -r requirements.txt
+  - pip install pytest
+  - pip install pytest-cov
+  - pip install coveralls
 # command to run tests
 script:
-  - pytest
+  - pytest --cov=routely/
 after_success:
   - coveralls
