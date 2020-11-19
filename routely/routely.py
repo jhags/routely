@@ -5,6 +5,7 @@ import copy
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 from matplotlib.ticker import MultipleLocator
 from scipy.interpolate import interp1d
@@ -109,10 +110,10 @@ class Route:
         """
         Returns route data in list form -> [(x, y, z, distance)]. z will be included if specified as an input arguement.
         """
-        if self.z is not None:
-            return list(zip(self.x, self.y, self.z, self.d))
-        else:
-            return list(zip(self.x, self.y, self.d))
+        # if self.z is not None:
+        #     return list(zip(self.x, self.y, self.z, self.d))
+        # else:
+        return pd.DataFrame({'x':self.x, 'y':self.y, 'd':self.d})
 
 
     def bbox(self):

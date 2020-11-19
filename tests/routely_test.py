@@ -1,6 +1,7 @@
 ''' Routely tests '''
 # Packages
 import numpy as np
+import pandas as pd
 import pytest
 from routely import Route
 
@@ -112,6 +113,17 @@ def test_center():
     r = _setup()
     center = r.center()
     assert (10, 20) == center
+
+
+def test_route():
+    r = _setup()
+
+    x = list(r.x)
+    y = list(r.y)
+    d = list(r.d)
+    df = pd.DataFrame(np.array([x, y, d]).transpose(), columns=['x', 'y', 'd'])
+
+    assert df.astype(float).equals(r.route().astype(float))
 
 
 def test_interpolate_steps():
