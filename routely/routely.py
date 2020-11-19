@@ -349,7 +349,7 @@ class Route:
 
         # cubic requires a different calculation, so check the kind first
         if not (kind == 'equidistant_steps') | (kind == 'absolute_steps'):
-            raise Exception ("Keyword argument for 'kind' not recognised. See docs for options.")
+            raise ValueError("Keyword argument for 'kind' not recognised. See docs for options.")
 
 
         if kind == 'equidistant_steps':
