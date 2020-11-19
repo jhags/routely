@@ -4,3 +4,4 @@
 **/routely.egg-info
 **/.pytest_cache
 **.coverage
+**/.dev
