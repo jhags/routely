@@ -25,7 +25,7 @@ y = [0, 10, 40, 15, 5, 20]
 
 To make use of Routely, we can pass these lists of x and y points to Routely's Route class.
 ```python
-from routely import Routely
+from routely import Route
 
 r = Route(x, y)
 r.plotroute()
