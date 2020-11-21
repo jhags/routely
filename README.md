@@ -1,4 +1,7 @@
 # Routely
+[![Coverage Status](https://coveralls.io/repos/github/jhags/routely/badge.svg?branch=main)](https://coveralls.io/github/jhags/routely?branch=main)
+[![Build Status](https://travis-ci.com/jhags/routely.svg?branch=main)](https://travis-ci.com/jhags/routely)
+
 Common operations and transformations on routes represented by a 2D line in xy space
 
 Route is designed to provide many of the common route operations and transformations to make route processing simpler and quicker.
