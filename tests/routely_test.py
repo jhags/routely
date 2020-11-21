@@ -147,6 +147,7 @@ def test_interpolate_steps():
     expected_nr_points = 1 + (r.d[-1] + num)//num
     assert expected_nr_points == len(r2.d)
 
+
 def test_interpolate_linear():
     r = _setup()
     num = 20
@@ -194,10 +195,54 @@ def test_copy():
 
 
 def test_center_on_origin():
-    r = _setup()
-    r2 = r.center_on_origin(new_origin=(0, 0))
+    r1 = _setup()
+    r2 = _setup()
+
+    r2.center_on_origin(new_origin=(0, 0), inplace=True)
 
     assert (0, 0) == r2.center()
-    assert r.size() == r2.size()
-    assert r.nr_points() == r2.nr_points()
-    assert r.center() != r2.center()
+    assert r1.size() == r2.size()
+    assert r1.nr_points() == r2.nr_points()
+    assert r1.center() != r2.center()
+
+    r3 = r1.center_on_origin(new_origin=(0, 0))
+
+    assert (0, 0) == r3.center()
+    assert r1.size() == r3.size()
+    assert r1.nr_points() == r3.nr_points()
+    assert r1.center() != r3.center()
+
+
+def test_plotroute():
+    r = _setup()
+    plot = r.plotroute()
+    plot_xdata = plot.lines[0].get_xdata()
+    plot_ydata = plot.lines[0].get_ydata()
+
+    assert list(r.x) == list(plot_xdata)
+    assert list(r.y) == list(plot_ydata)
+
+
+def test_clean_coordinates():
+    #idx 0, 1, 2, 3, 4, 5, 6, 7
+    x = [1, 2, 2, 3, 4, 5, 5, 6] # 0,1,x,3,4,5,x,7
+    y = [1, 2, 3, 3, 4, 4, 4, 5] # 0,1,2,x,4,x,6,7
+    z = [7, 6, 5, 4, 3, 2, 1, 0]
+
+    expected_x = [1, 2, 4, 6]
+    expected_y = [1, 2, 4, 5]
+    expected_z = [7, 6, 3, 0]
+
+    r = Route(x, y, z={'foo':z})
+    r2 = r.clean_coordinates(inplace=False)
+    r.clean_coordinates(inplace=True)
+
+    # inplace
+    assert expected_x == list(r.x)
+    assert expected_y == list(r.y)
+    assert expected_z == list(r.z['foo'])
+
+    # new object
+    assert expected_x == list(r2.x)
+    assert expected_y == list(r2.y)
+    assert expected_z == list(r2.z['foo'])
