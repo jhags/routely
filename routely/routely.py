@@ -225,6 +225,8 @@ class Route:
         elif canvas_style:
             ax.set_axis_off()
 
+        return ax
+
 
     def plot_z(self, markers=True):
         """Plot Route z-data (d vs z).
@@ -260,6 +262,8 @@ class Route:
             ax.label_outer()
 
         fig.tight_layout()
+
+        return ax
 
 
     def _calculate_distance(self):
