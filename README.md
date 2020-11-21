@@ -28,5 +28,22 @@ To make use of Routely, we can pass these lists of x and y points to Routely's R
 from routely import Route
 
 r = Route(x, y)
+
+# Plot x vs y
 r.plotroute()
+```
+
+You can add z-axis data too, which should be passed as a dictionary. This enables you to have one or more z-axis datasets.
+```python
+# Add a few z-axis datasets
+z1 = [0, 1, 2, 3, 4, 5]
+z2 = [6, 7, 8, 9, 10, 11]
+
+r = Route(x, y, z={'foo':z1, 'bar':z2})
+
+# Plot x vs y
+r.plotroute()
+
+# Plot z-axis data
+r.plot_z()
 ```
