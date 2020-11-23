@@ -7,6 +7,8 @@ Routely
 .. image:: https://travis-ci.com/jhags/routely.svg?branch=main
     :target: https://travis-ci.com/jhags/routely
 
+Travis build.
+
 Intro
 =======
 
@@ -51,8 +53,7 @@ To make use of Routely, we can pass these lists of x and y points to Routely's R
     # Plot x vs y
     r.plotroute()
 
-.. figure:: /docs/images/plot_1.png
-
+.. image:: ../images/plot_1.png
 
 You can add z-axis data too, which should be passed as a dictionary. This enables you to have one or more z-axis datasets.
 
@@ -61,12 +62,9 @@ You can add z-axis data too, which should be passed as a dictionary. This enable
     # Add a few z-axis datasets
     z1 = [0, 1, 2, 3, 4, 5]
     z2 = [6, 7, 8, 9, 10, 11]
-    
+
     r = Route(x, y, z={'foo':z1, 'bar':z2})
-    
-    # Plot x vs y
-    r.plotroute()
-    
+
     # Plot z-axis data
     r.plot_z()
 
