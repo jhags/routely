@@ -15,23 +15,12 @@ class Route:
     """
     Create a Route.
 
-    Description
-    -----------
-    Route is designed to provide many of the common route operations and transformations to make route processing simpler and quicker.
-
-    A route is represented by a series of point coordinates on a two dimensional x-y plane. Z-axis data can be specified as well, however the primary focus of these common transformations are based on the x-y plane data with z-axis data being transformed accordingly.
-
-    The primary focus is on x-y plane data because z-axis data does not have to represent a path through three dimensional space, rather z-data can represent additonal layers of route data that correspond to the x-y path.
-
-    For example, a runner may be tracking pace or heartrate, a car will have changes in speed, etc. Therefore, transformations are primarily concerned with the x-y route taken.
-
     Args:
-    -----
         x (array-like) : List or array of x-coordinates of the route.
 
         y (array-like) : List or array of y-coordinates of the route.
 
-        z (dict {key:array-like}, optional) : List or array of z data for the route. This does not need to be elevation, but any data corresponding to the route in the x-y plane. Defaults to None.
+        z (dict, optional) : List or array of z data for the route. This does not need to be elevation, but any data corresponding to the route in the x-y plane. Defaults to None.
     """
 
     def __init__(self, x, y, z=None):
