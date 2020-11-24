@@ -30,7 +30,7 @@ Installation
     pip install routely
 
 
-Usage
+Quick start
 =======
 
 To begin with, let's define a path that comprises two lists of x and y points that together form the coordinates of the line.
@@ -61,10 +61,35 @@ You can add z-axis data too, which should be passed as a dictionary. This enable
 
     # Add a few z-axis datasets
     z1 = [0, 1, 2, 3, 4, 5]
-    z2 = [6, 7, 8, 9, 10, 11]
+    z2 = [0, 1, 2, 3, 2, 0]
 
-    r = Route(x, y, z={'foo':z1, 'bar':z2})
+    # z-axis data must be passed as a dictionary
+    z_data = {'foo':z1, 'bar':z2}
+
+    r = Route(x, y, z=z_data)
 
     # Plot z-axis data
+    # Note that z-axis data is plotted against the distance along the route
     r.plot_z()
+
+.. image:: https://raw.githubusercontent.com/jhags/routely/main/docs/images/plot_2.png
+
+Using the Route object, you can now quickly and easily get key properties of the route data such as:
+
+.. code-block:: python
+
+    # Get the bounding box and center coordinates of the route
+    r.bbox()
+    ((-5, 0), (25, 40))
+
+    r.center()
+    (10.0, 20.0)
+
+    # The absolute width, height and centerof the route
+    r.width()
+    30
+
+    r.height()
+    40
+
 
