@@ -53,7 +53,7 @@ To make use of Routely, we can pass these lists of x and y points to Routely's R
     # Plot x vs y
     r.plotroute()
 
-.. image:: ../images/plot_1.png
+.. image:: https://raw.githubusercontent.com/jhags/routely/main/docs/images/plot_1.png
 
 You can add z-axis data too, which should be passed as a dictionary. This enables you to have one or more z-axis datasets.
 
