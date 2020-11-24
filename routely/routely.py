@@ -293,9 +293,10 @@ class Route:
         Returns:
             Route: Return a new Route object if inplace is False.
         """
-        idx_x = set(np.unique(self.x, return_index=True)[1])
-        idx_y = set(np.unique(self.y, return_index=True)[1])
-        idx = idx_x.intersection(idx_y)
+        # idx_x = set(np.unique(self.x, return_index=True)[1])
+        # idx_y = set(np.unique(self.y, return_index=True)[1])
+        # idx = idx_x.intersection(idx_y)
+        idx = set(np.unique(list(zip(self.x, self.y)), axis=0, return_index=True)[1])
         new_x = self.x[list(idx)]
         new_y = self.y[list(idx)]
 
