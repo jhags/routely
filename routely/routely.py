@@ -285,7 +285,7 @@ class Route:
 
 
     def clean_coordinates(self, inplace=False):
-        """Clean the coordinate lists by removing duplicate x and y values. This is done by finding the intersection between a unique index list of x and a unique list of y, and returning the correspondong coordinates for x, y and z data.
+        """Clean the coordinate lists by removing duplicate x and y tuples. This is done by finding the index list of unique x and y tuples, and returning the correspondong coordinates for x, y and z data.
 
         Args:
             inplace (bool, optional): If True, modify Route attributes in place. If False, return a new Route object. Defaults to False.
