@@ -338,9 +338,9 @@ class Route:
 
         Available strategies include (specify chosen strategy in 'kind' args):
 
-        >>> 'equidistant_Steps': equally spaced steps along the route path from start to end, using np.arange(). Step spacing specified by 'num' arg. This is not equidistant steps along x or y axis but distance along the path ie between route waypoints. Note: some variation in steps may occur in order to coincide with existing x and y coordinates.
+            --> 'equidistant_Steps': equally spaced steps along the route path from start to end, using np.arange(). Step spacing specified by 'num' arg. This is not equidistant steps along x or y axis but distance along the path ie between route waypoints. Note: some variation in steps may occur in order to coincide with existing x and y coordinates.
 
-        >>> 'absolute_steps': the total number of points along the full route as specified by 'num' arg. The spacing of the points will be linear along the length of the route using np.linspace.
+            --> 'absolute_steps': the total number of points along the full route as specified by 'num' arg. The spacing of the points will be linear along the length of the route using np.linspace.
 
         Note, in all cases, the total route distance may vary from the original but the start and end coordinates will remain the same.
 
