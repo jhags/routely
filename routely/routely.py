@@ -472,7 +472,7 @@ class Route:
             self.y = np.array(y_new)
             self.d = self._calculate_distance()
         else:
-            return Route(x_new, y_new)
+            return Route(x_new, y_new, z=self.z)
 
 
     def align_to_origin(self, origin=(0, 0), align_corner='bottomleft', inplace=False):
@@ -512,7 +512,7 @@ class Route:
             self.y = np.array(y_new)
             self.d = self._calculate_distance()
         else:
-            return Route(x_new, y_new)
+            return Route(x_new, y_new, z=self.z)
 
 
     @staticmethod
@@ -562,7 +562,7 @@ class Route:
             self.y = np.array(y_new)
             self.d = self._calculate_distance()
         else:
-            return Route(x_new, y_new)
+            return Route(x_new, y_new, z=self.z)
 
 
     def mirror(self, about_x=False, about_y=False, about_axis=False, inplace=False):
@@ -601,7 +601,7 @@ class Route:
             self.y = np.array(y_new)
             self.d = self._calculate_distance()
         else:
-            return Route(x_new, y_new)
+            return Route(x_new, y_new, z=self.z)
 
 
     def fit_to_box(self, box_width, box_height, keep_aspect=True, inplace=False):
@@ -635,7 +635,7 @@ class Route:
             self.y = np.array(y_new)
             self.d = self._calculate_distance()
         else:
-            return Route(x_new, y_new)
+            return Route(x_new, y_new, z=self.z)
 
 
     def optimise_bbox(self, box_width, box_height, inplace=False):
