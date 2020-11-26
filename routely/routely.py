@@ -284,10 +284,11 @@ class Route:
         return math.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
 
 
-    def clean_coordinates(self, inplace=False):
-        """Clean the coordinate lists by removing duplicate x and y tuples. This is done by finding the index list of unique x and y tuples, and returning the correspondong coordinates for x, y and z data.
+    def clean_coordinates(self, duplicates='consecutive', inplace=False):
+        """Clean the coordinate lists by removing duplicate x and y tuples. This is done by finding the index list of unique x and y tuples, and returning the correspondong coordinates for x, y and z data. Two methods for finding duplicates are available: consecutive or any. See args for description.
 
         Args:
+            duplicates(str, optional): Choose the method for dealing with duplicate coordinate tuples. If "consecutive" then remove consecutive duplicates keeping the first. If "any", remove all duplicate coordinate tuples. Defaults to consecutive.
             inplace (bool, optional): If True, modify Route attributes in place. If False, return a new Route object. Defaults to False.
 
         Returns:
@@ -296,7 +297,19 @@ class Route:
         # idx_x = set(np.unique(self.x, return_index=True)[1])
         # idx_y = set(np.unique(self.y, return_index=True)[1])
         # idx = idx_x.intersection(idx_y)
-        idx = set(np.unique(list(zip(self.x, self.y)), axis=0, return_index=True)[1])
+        if duplicates == 'consecutive':
+            xy = list(zip(self.x, self.y))
+            idx = [0]
+            for i, p in list(enumerate(xy))[1:]:
+                if p != xy[i-1]:
+                    idx.append(i)
+
+        elif duplicates == 'any':
+            idx = set(np.unique(list(zip(self.x, self.y)), axis=0, return_index=True)[1])
+
+        else:
+            raise ValueError("'duplicates' arg not valid see docs for valid options")
+
         new_x = self.x[list(idx)]
         new_y = self.y[list(idx)]
 
