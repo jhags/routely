@@ -25,6 +25,7 @@ To get started, some example usage is given below. For these examples, a simple 
 .. image:: https://raw.githubusercontent.com/jhags/routely/main/docs/images/plot_2.png
     :width: 49%
 
+
 Common transformation
 ------------
 
@@ -34,6 +35,7 @@ Translating to origin
 Translate the whole route so that the center coordinate point is now the origin (0, 0).
 
 .. code-block:: python
+
     r2 = r.center_on_origin()
 
     # Check the center point coordiates
@@ -44,11 +46,14 @@ Translate the whole route so that the center coordinate point is now the origin 
 
 .. image:: https://raw.githubusercontent.com/jhags/routely/main/docs/images/usage_plot3.png
 
+
 Aligning to origin
 ^^^^^^^^^^^^
 
 Translate the route to the origin such that a specified corner of the route aligns with the origin (0, 0).
+
 .. code-block:: python
+
     r2 = r.align_to_origin(align_corner='bottomleft')
 
     r2.plotroute()
@@ -59,9 +64,34 @@ Translate the route to the origin such that a specified corner of the route alig
 Mirror about axes
 ^^^^^^^^^^^^
 
+Mirror in the x direction about the route's center point and about the x-axis.
+
+.. code-block:: python
+
+    # Mirror about x
+    r2 = r.mirror(about_x=True)
+    r2.plotroute()
+
+    # Mirror about x across the x-axis
+    r2 = r.mirror(about_x=True, about_axis=True)
+    r2.plotroute()
+
+.. image:: https://raw.githubusercontent.com/jhags/routely/main/docs/images/usage_plot5.png
+    :width: 49%
+.. image:: https://raw.githubusercontent.com/jhags/routely/main/docs/images/usage_plot6.png
+    :width: 49%
+
 Rotating
 ^^^^^^^^^^^^
-And something on rotation
+Rotate the route by 90 degrees.
+
+.. code-block:: python
+
+    # Rotate the route through 90 degrees clockwise
+    r2 = r.rotate(90)
+    r2.plotroute()
+
+.. image:: https://raw.githubusercontent.com/jhags/routely/main/docs/images/usage_plot7.png
 
 
 More complex transformation
@@ -69,6 +99,21 @@ More complex transformation
 
 Interpolation
 ^^^^^^^^^^^^
+
+.. code-block:: python
+
+    # Interpolate using equidistant steps spaced at equal distance of 2.
+    r2 = r.interpolate(kind='equidistant_steps', num=2)
+    r2.plotroute()
+
+    # Interpolate using absolute steps and specify a total of 50 points from start to end.
+    r2 = r.interpolate(kind='absolute_steps', num=50)
+    r2.plotroute(markers=True)
+
+.. image:: https://raw.githubusercontent.com/jhags/routely/main/docs/images/usage_plot8.png
+    :width: 49%
+.. image:: https://raw.githubusercontent.com/jhags/routely/main/docs/images/usage_plot9.png
+    :width: 49%
 
 Smoothing
 ^^^^^^^^^^^^
