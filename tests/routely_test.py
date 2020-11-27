@@ -129,7 +129,7 @@ def test_route():
 def test_interpolate_steps():
     r = _setup()
     num = 2
-    r2 = r.interoplate(kind='equidistant_steps', num=num, inplace=False)
+    r2 = r.interpolate(kind='equidistant_steps', num=num, inplace=False)
 
     # check start and end coords
     r1_start_coord = (r.x[0], r.y[0])
@@ -151,7 +151,7 @@ def test_interpolate_steps():
 def test_interpolate_linear():
     r = _setup()
     num = 20
-    r2 = r.interoplate(kind='absolute_steps', num=num, inplace=False)
+    r2 = r.interpolate(kind='absolute_steps', num=num, inplace=False)
 
     # check start and end coords
     r1_start_coord = (r.x[0], r.y[0])
@@ -224,18 +224,43 @@ def test_plotroute():
 
 
 def test_clean_coordinates():
-    #idx 0, 1, 2, 3, 4, 5, 6, 7
-    x = [1, 2, 2, 3, 4, 5, 5, 6] # 0,1,x,3,4,5,x,7
-    y = [1, 2, 3, 3, 4, 4, 4, 5] # 0,1,2,x,4,x,6,7
-    z = [7, 6, 5, 4, 3, 2, 1, 0]
+    #idx 0, 1, 2, 3, 4, 5, 6, 7, 8
+    #    0, 1, x, 3, 4, 5, x, x, x, x --> any
+    #    0, 1, x, 3, 4, 5, 6, x, x, 9 --> consecutive
+    x = [0, 1, 1, 2, 3, 4, 3, 3, 3, 4]
+    y = [1, 2, 2, 3, 4, 4, 4, 4, 4, 4]
+    z = [8, 7, 6, 5, 4, 3, 2, 1, 0, 0]
 
-    expected_x = [1, 2, 4, 6]
-    expected_y = [1, 2, 4, 5]
-    expected_z = [7, 6, 3, 0]
-
+    # test duplicates='any'
     r = Route(x, y, z={'foo':z})
-    r2 = r.clean_coordinates(inplace=False)
-    r.clean_coordinates(inplace=True)
+
+    r2 = r.clean_coordinates(duplicates='any', inplace=False)
+    r.clean_coordinates(duplicates='any', inplace=True)
+
+    expected_x = [0, 1, 2, 3, 4]
+    expected_y = [1, 2, 3, 4, 4]
+    expected_z = [8, 7, 5, 4, 3]
+
+    # inplace
+    assert expected_x == list(r.x)
+    assert expected_y == list(r.y)
+    assert expected_z == list(r.z['foo'])
+
+    # new object
+    assert expected_x == list(r2.x)
+    assert expected_y == list(r2.y)
+    assert expected_z == list(r2.z['foo'])
+
+    # test duplicates='consecutive'
+    r = Route(x, y, z={'foo':z})
+
+    r2 = r.clean_coordinates(duplicates='consecutive', inplace=False)
+    r.clean_coordinates(duplicates='consecutive', inplace=True)
+
+    #             0, 1, x, 3, 4, 5, 6, x, 8 --> consecutive
+    expected_x = [0, 1, 2, 3, 4, 3, 4]
+    expected_y = [1, 2, 3, 4, 4, 4, 4]
+    expected_z = [8, 7, 5, 4, 3, 2, 0]
 
     # inplace
     assert expected_x == list(r.x)
