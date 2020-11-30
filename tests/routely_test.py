@@ -262,6 +262,16 @@ def test_plotroute():
     assert list(r.y) == list(plot_ydata)
 
 
+def test_plot_z():
+    r = _setup()
+    plot = r.plot_z()
+    plot_xdata = plot.lines[0].get_xdata()
+    plot_ydata = plot.lines[0].get_ydata()
+
+    assert list(r.d) == list(plot_xdata)
+    assert list(r.z['foo']) == list(plot_ydata)
+
+
 def test_clean_coordinates():
     #idx 0, 1, 2, 3, 4, 5, 6, 7, 8
     #    0, 1, x, 3, 4, 5, x, x, x, x --> any
@@ -310,3 +320,23 @@ def test_clean_coordinates():
     assert expected_x == list(r2.x)
     assert expected_y == list(r2.y)
     assert expected_z == list(r2.z['foo'])
+
+
+def test_rotate():
+    x = [0, 0, 0, 0, 0]
+    y = [-2, -1, 0, 1, 2]
+    r1 = Route(x, y)
+
+    r2 = r1.rotate(90, inplace=False)
+    x_exp = [-2, -1, 0, 1, 2]
+    y_exp = [0, 0, 0, 0, 0]
+
+    assert x_exp == list(r2.x)
+    assert y_exp == pytest.approx(list(r2.y), rel=0.1)
+
+    r1.rotate(90, inplace=True)
+    x_exp = [-2, -1, 0, 1, 2]
+    y_exp = [0, 0, 0, 0, 0]
+
+    assert x_exp == list(r1.x)
+    assert y_exp == pytest.approx(list(r1.y), rel=0.1)
