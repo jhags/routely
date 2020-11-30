@@ -59,9 +59,17 @@ def test_check_inputvalues():
     with pytest.raises(TypeError):
         Route(x, y, z=z)
 
-# def test_route():
-#     r = _setup()
-#     e
+def test_dataframe():
+    r = _setup()
+    df = pd.DataFrame({
+        'x':r.x,
+        'y':r.y,
+        'd':r.d,
+        'foo':r.z['foo']
+    })
+
+    assert df.astype(float).equals(r.dataframe().astype(float))
+
 
 def test_nr_points():
     r = _setup()
@@ -114,17 +122,6 @@ def test_center():
     r = _setup()
     center = r.center()
     assert (10, 20) == center
-
-
-def test_route():
-    r = _setup()
-
-    x = list(r.x)
-    y = list(r.y)
-    d = list(r.d)
-    df = pd.DataFrame(np.array([x, y, d]).transpose(), columns=['x', 'y', 'd'])
-
-    assert df.astype(float).equals(r.route().astype(float))
 
 
 def test_interpolate_steps():
@@ -212,6 +209,47 @@ def test_center_on_origin():
     assert r1.size() == r3.size()
     assert r1.nr_points() == r3.nr_points()
     assert r1.center() != r3.center()
+
+
+def test_align_to_origin():
+    r1 = _setup()
+    r2 = _setup()
+
+    # test inplace (only needed once)
+    r2.align_to_origin(align_corner='bottomleft', inplace=True)
+
+    assert (0, 0) != r2.center()
+    assert r1.size() == r2.size()
+    assert r1.nr_points() == r2.nr_points()
+    assert r2.bbox()[0] == (0, 0)
+
+    r3 = r1.align_to_origin(align_corner='bottomleft')
+
+    assert (0, 0) != r3.center()
+    assert r1.size() == r3.size()
+    assert r1.nr_points() == r3.nr_points()
+    assert (0, 0) == r1.bbox()[0]
+
+    r3 = r1.align_to_origin(align_corner='topright')
+
+    assert (0, 0) != r3.center()
+    assert r1.size() == r3.size()
+    assert r1.nr_points() == r3.nr_points()
+    assert (0, 0) == r3.bbox()[1]
+
+    r3 = r1.align_to_origin(align_corner='bottomright')
+
+    assert (0, 0) != r3.center()
+    assert r1.size() == r3.size()
+    assert r1.nr_points() == r3.nr_points()
+    assert (0, 0) == (r3.bbox()[1][0], r3.bbox()[0][1])
+
+    r3 = r1.align_to_origin(align_corner='topleft')
+
+    assert (0, 0) != r3.center()
+    assert r1.size() == r3.size()
+    assert r1.nr_points() == r3.nr_points()
+    assert (0, 0) == (r3.bbox()[0][0], r3.bbox()[1][1])
 
 
 def test_plotroute():

@@ -95,14 +95,17 @@ class Route:
         return copy.copy(self)
 
 
-    def route(self):
+    def dataframe(self):
         """
         Returns route data in list form -> [(x, y, z, distance)]. z will be included if specified as an input arguement.
         """
-        # if self.z is not None:
-        #     return list(zip(self.x, self.y, self.z, self.d))
-        # else:
-        return pd.DataFrame({'x':self.x, 'y':self.y, 'd':self.d})
+        df = pd.DataFrame({'x':self.x, 'y':self.y, 'd':self.d})
+
+        if self.z is not None:
+            for k, v in self.z.items():
+                df[k] = v
+
+        return df
 
 
     def bbox(self):
