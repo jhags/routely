@@ -128,7 +128,24 @@ Interpolate points along the route using two methods, the first specifying the e
 
 Smoothing
 ^^^^^^^^^^^^
-Here is something on smoothing
 
+Smoothing the route can be done easily. It uses Scipy's cubic interpolation function to generate a smooth curve between the existing points. The same function also applies to any z-data present for the route.
+
+Since our example route has relatively few waypoints, no smoothing factor is needed. However, if a route has many coordiates, a smoothing factor may be needed to reduce the quantity of coordinates. The higher the smoothing factor, the fewer the points, and the smoother the route.
+
+.. code-block:: python
+
+    # Smooth the route
+    r2 = r.smooth()
+
+    # Since the interpolation function creates a large number of
+    # new waypoints, don't show the markers on the plots
+    r.plotroute(markers=False)
+    r.plot_z(markers=False)
+
+.. image:: https://raw.githubusercontent.com/jhags/routely/main/docs/images/usage_plot10.png
+    :width: 49%
+.. image:: https://raw.githubusercontent.com/jhags/routely/main/docs/images/usage_plot10_1.png
+    :width: 49%
 
 
