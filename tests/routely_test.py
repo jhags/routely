@@ -5,6 +5,7 @@ import pandas as pd
 import pytest
 from routely import Route
 
+# with pytest-cov: pytest --cov=routely tests/
 
 def _setup():
     x = [0, 5, 15, 20, 10]
