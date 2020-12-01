@@ -1,16 +1,16 @@
 Routely
 =======
 
-.. image:: https://coveralls.io/repos/github/jhags/routely/badge.svg?branch=main
-    :target: https://coveralls.io/github/jhags/routely?branch=main
-
 .. image:: https://travis-ci.com/jhags/routely.svg?branch=main
     :target: https://travis-ci.com/jhags/routely
+
+.. image:: https://coveralls.io/repos/github/jhags/routely/badge.svg?branch=main
+    :target: https://coveralls.io/github/jhags/routely?branch=main
 
 .. image:: https://readthedocs.org/projects/routely/badge/?version=latest
     :target: https://routely.readthedocs.io/en/latest/?badge=latest
 
-Travis build.
+Travis build Python 3.4, 3.5, 3.6, 3.7, 3.8.
 
 Intro
 =======
