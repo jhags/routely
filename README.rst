@@ -7,6 +7,9 @@ Routely
 .. image:: https://travis-ci.com/jhags/routely.svg?branch=main
     :target: https://travis-ci.com/jhags/routely
 
+.. image:: https://readthedocs.org/projects/routely/badge/?version=latest
+    :target: https://routely.readthedocs.io/en/latest/?badge=latest
+
 Travis build.
 
 Intro
