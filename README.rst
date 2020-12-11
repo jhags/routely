@@ -13,7 +13,7 @@ Routely
 Travis build Python 3.6, 3.7, 3.8.
 
 Intro
-=======
+=====
 
 Common operations and transformations on routes represented by a 2D line in xy space
 
@@ -26,7 +26,7 @@ The primary focus is on x-y plane data because z-axis data does not have to repr
 For example, a runner may be tracking pace or heartrate, a car will have changes in speed, etc. Therefore, transformations are primarily concerned with the x-y route taken.
 
 Installation
-=======
+============
 
 .. code-block:: python
 
@@ -34,7 +34,7 @@ Installation
 
 
 Quick start
-=======
+===========
 
 To begin with, let's define a path that comprises two lists of x and y points that together form the coordinates of the line.
 

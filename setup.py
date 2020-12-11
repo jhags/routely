@@ -14,7 +14,7 @@ setup(
     version='0.1.0',
     description='Common operations and transformations on routes represented by a 2D line in xy space.',
     long_description=readme,
-    long_description_content_type="text/restructuredtext",
+    long_description_content_type="text/x-rst",
     url='https://github.com/jhags/routely',
     author='J Hagstrom',
     license='MIT',
