@@ -127,7 +127,7 @@ def test_center():
 def test_interpolate_steps():
     r = _setup()
     num = 2
-    r2 = r.interpolate(kind='equidistant_steps', num=num, inplace=False)
+    r2 = r.interpolate(kind='equidistant_steps', num=num)
 
     # check start and end coords
     r1_start_coord = (r.x[0], r.y[0])
@@ -149,7 +149,7 @@ def test_interpolate_steps():
 def test_interpolate_linear():
     r = _setup()
     num = 20
-    r2 = r.interpolate(kind='absolute_steps', num=num, inplace=False)
+    r2 = r.interpolate(kind='absolute_steps', num=num)
 
     # check start and end coords
     r1_start_coord = (r.x[0], r.y[0])
@@ -166,7 +166,7 @@ def test_interpolate_linear():
 
 # def test_interpolate_cubic():
 
-#     r2 = r.smooth(0.9, inplace=False)
+#     r2 = r.smooth(0.9)
 
 #     # check start and end coords
 #     r1_start_coord = (r.x[0], r.y[0])
@@ -185,7 +185,7 @@ def test_copy():
     route_copy = r.copy()
 
     # modify that copy
-    route_copy.align_to_origin(origin=(10, 10), inplace=True)
+    route_copy = route_copy.align_to_origin(origin=(10, 10))
 
     # compare x and y
     assert list(route_copy.x) != list(r.x)
@@ -194,14 +194,6 @@ def test_copy():
 
 def test_center_on_origin():
     r1 = _setup()
-    r2 = _setup()
-
-    r2.center_on_origin(new_origin=(0, 0), inplace=True)
-
-    assert (0, 0) == r2.center()
-    assert r1.size() == r2.size()
-    assert r1.nr_points() == r2.nr_points()
-    assert r1.center() != r2.center()
 
     r3 = r1.center_on_origin(new_origin=(0, 0))
 
@@ -214,14 +206,6 @@ def test_center_on_origin():
 def test_align_to_origin():
     r1 = _setup()
     r2 = _setup()
-
-    # test inplace (only needed once)
-    r2.align_to_origin(align_corner='bottomleft', inplace=True)
-
-    assert (0, 0) != r2.center()
-    assert r1.size() == r2.size()
-    assert r1.nr_points() == r2.nr_points()
-    assert r2.bbox()[0] == (0, 0)
 
     r3 = r1.align_to_origin(align_corner='bottomleft')
 
@@ -283,17 +267,11 @@ def test_clean_coordinates():
     # test duplicates='any'
     r = Route(x, y, z={'foo':z})
 
-    r2 = r.clean_coordinates(duplicates='any', inplace=False)
-    r.clean_coordinates(duplicates='any', inplace=True)
+    r2 = r.clean_coordinates(duplicates='any')
 
     expected_x = [0, 1, 2, 3, 4]
     expected_y = [1, 2, 3, 4, 4]
     expected_z = [8, 7, 5, 4, 3]
-
-    # inplace
-    assert expected_x == list(r.x)
-    assert expected_y == list(r.y)
-    assert expected_z == list(r.z['foo'])
 
     # new object
     assert expected_x == list(r2.x)
@@ -303,18 +281,12 @@ def test_clean_coordinates():
     # test duplicates='consecutive'
     r = Route(x, y, z={'foo':z})
 
-    r2 = r.clean_coordinates(duplicates='consecutive', inplace=False)
-    r.clean_coordinates(duplicates='consecutive', inplace=True)
+    r2 = r.clean_coordinates(duplicates='consecutive')
 
     #             0, 1, x, 3, 4, 5, 6, x, 8 --> consecutive
     expected_x = [0, 1, 2, 3, 4, 3, 4]
     expected_y = [1, 2, 3, 4, 4, 4, 4]
     expected_z = [8, 7, 5, 4, 3, 2, 0]
-
-    # inplace
-    assert expected_x == list(r.x)
-    assert expected_y == list(r.y)
-    assert expected_z == list(r.z['foo'])
 
     # new object
     assert expected_x == list(r2.x)
@@ -327,16 +299,9 @@ def test_rotate():
     y = [-2, -1, 0, 1, 2]
     r1 = Route(x, y)
 
-    r2 = r1.rotate(90, inplace=False)
+    r2 = r1.rotate(90)
     x_exp = [-2, -1, 0, 1, 2]
     y_exp = [0, 0, 0, 0, 0]
 
     assert x_exp == list(r2.x)
     assert y_exp == pytest.approx(list(r2.y), rel=0.1)
-
-    r1.rotate(90, inplace=True)
-    x_exp = [-2, -1, 0, 1, 2]
-    y_exp = [0, 0, 0, 0, 0]
-
-    assert x_exp == list(r1.x)
-    assert y_exp == pytest.approx(list(r1.y), rel=0.1)

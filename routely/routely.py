@@ -287,15 +287,14 @@ class Route:
         return math.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
 
 
-    def clean_coordinates(self, duplicates='consecutive', inplace=False):
+    def clean_coordinates(self, duplicates='consecutive'):
         """Clean the coordinate lists by removing duplicate x and y tuples. This is done by finding the index list of unique x and y tuples, and returning the correspondong coordinates for x, y and z data. Two methods for finding duplicates are available: consecutive or any. See args for description.
 
         Args:
             duplicates(str, optional): Choose the method for dealing with duplicate coordinate tuples. If "consecutive" then remove consecutive duplicates keeping the first. If "any", remove all duplicate coordinate tuples. Defaults to consecutive.
-            inplace (bool, optional): If True, modify Route attributes in place. If False, return a new Route object. Defaults to False.
 
         Returns:
-            Route: Return a new Route object if inplace is False.
+            Route: Return a new Route object.
         """
         # idx_x = set(np.unique(self.x, return_index=True)[1])
         # idx_y = set(np.unique(self.y, return_index=True)[1])
@@ -324,17 +323,10 @@ class Route:
         else:
             zz = None
 
-        if inplace:
-            self.x = new_x
-            self.y = new_y
-            self.d = self._calculate_distance()
-            self.z = zz
-
-        elif inplace is False:
-            return Route(new_x, new_y, z=zz)
+        return Route(new_x, new_y, z=zz)
 
 
-    def interpolate(self, kind='equidistant_steps', num=1, inplace=False):
+    def interpolate(self, kind='equidistant_steps', num=1):
         """
         Interpolate Route x and y coordinate lists given various interpolation stategies.
 
@@ -350,10 +342,9 @@ class Route:
         Args:
             kind (str, optional): See docs for options. Defaults to 'equidistant_steps'.
             num (int, optional): step value corresponding to chosen 'kind' of interpolation. Defaults to 1.
-            inplace (bool, optional): If True, modify Route attributes in place. If False, return a new Route object. Defaults to False.
 
         Returns:
-            Route: Return a new Route object if inplace is False.
+            Route: Return a new Route object.
         """
         x = self.x
         y = self.y
@@ -386,15 +377,7 @@ class Route:
         else:
             zz = None
 
-
-        if inplace:
-            self.x = xx
-            self.y = yy
-            self.d = np.array(dist)
-            self.z = zz
-
-        elif inplace is False:
-            return Route(xx, yy, z=zz)
+        return Route(xx, yy, z=zz)
 
     # TODO: Add Univariate Spline
     # def add_spline(self):
@@ -402,29 +385,28 @@ class Route:
     #     return
 
 
-    def smooth(self, smoothing_factor=None, inplace=False):
+    def smooth(self, smoothing_factor=None):
         """Smooth the route using cubic interpolation by varying the smoothing factor from 0 to 1.
 
         The smoothing factor dictates how much smoothing will be applied. The factor reduces the number of route coordinate points relative to the mean change in distance between coordinates. With a reduced number of points, the route is smoothed using Scipy's cubic interpolation. Consquently, the higher the factor, the fewer coordinate points and the higher level of smoothing. The smoothing factor must be greater than or equal to 0 and less than 1.0.
 
         Args:
             smoothing_factor (float): level of smoothing to apply between 0 (no smoothing) and 1 (max smoothing). Must be less than 1.
-            inplace (bool, optional): If True, modify Route attributes in place. If False, return a new Route object. Defaults to False.
 
         Returns:
-            Route: Return a new Route object if inplace is False.
+            Route: Return a new Route object.
         """
         if smoothing_factor is not None:
             nr_points = int(np.diff(self.d).mean()/(1 - smoothing_factor))
 
             #interpolate first
-            r = self.interpolate(kind='equidistant_steps', num=nr_points, inplace=False)
+            r = self.interpolate(kind='equidistant_steps', num=nr_points)
 
         else:
             # if none, simply interpolate through the existing coord points
             r = self.copy()
             # clean coords list first. Interpolation cannot handle duplicate values in the list.
-            r.clean_coordinates(inplace=True)
+            r = r.clean_coordinates()
 
         # Use linspace to get a new list of distanced points
         dist = np.linspace(r.d.min(), r.d.max(), num=5000)
@@ -445,25 +427,17 @@ class Route:
         else:
             zz = None
 
-        if inplace:
-            self.x = xx
-            self.y = yy
-            self.d = np.array(dist)
-            self.z = zz
-
-        elif inplace is False:
-            return Route(xx, yy, z=zz)
+        return Route(xx, yy, z=zz)
 
 
-    def center_on_origin(self, new_origin=(0, 0), inplace=False):
+    def center_on_origin(self, new_origin=(0, 0)):
         """Translate the Route to the origin, where the Route center point will be equal to the origin.
 
         Args:
             new_origin (tuple, optional): New Route origin, which will correspond to the Route's center point. Defaults to (0, 0).
-            inplace (bool, optional): If True, modify Route attributes in place. If False, return a new Route object. Defaults to False.
 
         Returns:
-            Route: Return a new Route object if inplace is False.
+            Route: Return a new Route object.
         """
         center = self.center()
 
@@ -471,24 +445,18 @@ class Route:
         x_new = self.x - center[0] + new_origin[0]
         y_new = self.y - center[1] + new_origin[1]
 
-        if inplace:
-            self.x = np.array(x_new)
-            self.y = np.array(y_new)
-            self.d = self._calculate_distance()
-        else:
-            return Route(x_new, y_new, z=self.z)
+        return Route(x_new, y_new, z=self.z)
 
 
-    def align_to_origin(self, origin=(0, 0), align_corner='bottomleft', inplace=False):
+    def align_to_origin(self, origin=(0, 0), align_corner='bottomleft'):
         """Align a corner of Route extents to the origin.
 
         Args:
             origin (tuple, optional): Route origin to align a chosen corner to. Defaults to (0, 0).
             align_corner (str, optional): Choose a corner to align. Options: 'bottomleft', 'bottomright', 'topleft', 'topright'. Defaults to 'bottomleft'.
-            inplace (bool, optional): If True, modify Route attributes in place. If False, return a new Route object. Defaults to False.
 
         Returns:
-            Route: Return a new Route object if inplace is False.
+            Route: Return a new Route object.
         """
         # Options: bottomleft, bottomright, topleft, topright
 
@@ -511,12 +479,7 @@ class Route:
         x_new = self.x - corner[0] + origin[0]
         y_new = self.y - corner[1] + origin[1]
 
-        if inplace:
-            self.x = np.array(x_new)
-            self.y = np.array(y_new)
-            self.d = self._calculate_distance()
-        else:
-            return Route(x_new, y_new, z=self.z)
+        return Route(x_new, y_new, z=self.z)
 
 
     @staticmethod
@@ -540,15 +503,14 @@ class Route:
         return qx, qy
 
 
-    def rotate(self, angle_deg, inplace=False):
+    def rotate(self, angle_deg):
         """Rotate Route x and y coordinates clockwise for a given angle in degrees. This does not modify z-axis data.
 
         Args:
             angle_deg (float): angle of rotation in degrees.
-            inplace (bool, optional): If True, modify Route attributes in place. If False, return a new Route object. Defaults to False.
 
         Returns:
-            Route: Return a new Route object if inplace is False.
+            Route: Return a new Route object.
         """
         xy = list(zip(self.x, self.y))
         c = self.center()
@@ -561,25 +523,19 @@ class Route:
             x_new.append(p[0])
             y_new.append(p[1])
 
-        if inplace:
-            self.x = np.array(x_new)
-            self.y = np.array(y_new)
-            self.d = self._calculate_distance()
-        else:
-            return Route(x_new, y_new, z=self.z)
+        return Route(x_new, y_new, z=self.z)
 
 
-    def mirror(self, about_x=False, about_y=False, about_axis=False, inplace=False):
+    def mirror(self, about_x=False, about_y=False, about_axis=False):
         """Mirror Route x and y coordinates in the x and y planes as may be specified.
 
         Args:
             about_x (bool, optional): If True, mirror Route horizontally. Defaults to False.
             about_y (bool, optional): If True, mirror Route vertically. Defaults to False.
             about_axis (bool, optional): If True, mirror Route about the x or y axis. If False, mirror Route about the Route's center point. Defaults to False.
-            inplace (bool, optional): If True, modify Route attributes in place. If False, return a new Route object. Defaults to False.
 
         Returns:
-            Route: Return a new Route object if inplace is False.
+            Route: Return a new Route object.
         """
         if about_axis:
             c = (0, 0)
@@ -600,25 +556,19 @@ class Route:
         else:
             y_new = self.y
 
-        if inplace:
-            self.x = np.array(x_new)
-            self.y = np.array(y_new)
-            self.d = self._calculate_distance()
-        else:
-            return Route(x_new, y_new, z=self.z)
+        return Route(x_new, y_new, z=self.z)
 
 
-    def fit_to_box(self, box_width, box_height, keep_aspect=True, inplace=False):
+    def fit_to_box(self, box_width, box_height, keep_aspect=True):
         """Scale the Route to fit within a specified bounding box of given width and height. This modifies the x, y and d Route attributes.
 
         Args:
             box_width (float): Desired width.
             box_height (float): Desired height.
             keep_aspect (bool, optional): If True, the route will be scalled equal in both x and y directions ensuring the new route will fit within the smallest extent. If False, x and y coordinates will be scalled independently such that the modified route will fill the specified width and height. Note: this modifies the aspect ratio of the route. Defaults to True.
-            inplace (bool, optional): If True, modify Route attributes in place. If False, return a new Route object. Defaults to False.
 
         Returns:
-            Route: Return a new Route object if inplace is False.
+            Route: Return a new Route object.
         """
         #Scale factors for width and height
         if keep_aspect:
@@ -634,15 +584,10 @@ class Route:
         x_new = self.x/sfactor_x
         y_new = self.y/sfactor_y
 
-        if inplace:
-            self.x = np.array(x_new)
-            self.y = np.array(y_new)
-            self.d = self._calculate_distance()
-        else:
-            return Route(x_new, y_new, z=self.z)
+        return Route(x_new, y_new, z=self.z)
 
 
-    def optimise_bbox(self, box_width, box_height, inplace=False):
+    def optimise_bbox(self, box_width, box_height):
         """Rotate the route to the most efficient use of space given the width and height of a bounding box. This does not scale the route to fill the space but rather find the best aspect ratio of the route that best matches that of the specified box width and height.
 
         The route is rotated 90 degrees clockwise in steps of one degree about the route's center point.
@@ -650,10 +595,9 @@ class Route:
         Args:
             box_width (float): box width.
             box_height (float): box height.
-            inplace (bool, optional): If True, modify Route attributes in place. If False, return a new Route object. Defaults to False.
 
         Returns:
-            Route: Return a new Route object if inplace is False.
+            Route: Return a new Route object.
         """
         target = box_width/box_height
 
@@ -672,4 +616,4 @@ class Route:
         idx = spatial_eff.argmin()
         angle = angles[idx]
 
-        return self.rotate(angle, inplace=inplace)
+        return self.rotate(angle)
