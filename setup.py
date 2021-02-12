@@ -25,5 +25,6 @@ setup(
     ],
     packages=find_packages(include=['routely', 'routely.*']),
     install_requires=required,
-    tests_require=['pytest', 'pytest-cov', 'coveralls']
+    tests_require=['pytest', 'pytest-cov', 'coveralls'],
+    python_requires='>=3.7',
 )
