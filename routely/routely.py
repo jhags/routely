@@ -603,7 +603,7 @@ class Route:
 
         angles = []
         spatial_eff = [] # spatial efficiency
-        for angle in np.arange(0, 91, 1):
+        for angle in np.arange(-90, 91, 1):
             r_rotated = self.rotate(angle)
             spatial_ratio = abs(r_rotated.width()/r_rotated.height())
 
