@@ -10,7 +10,10 @@ Routely
 .. image:: https://readthedocs.org/projects/routely/badge/?version=latest
     :target: https://routely.readthedocs.io/en/latest/?badge=latest
 
-Travis build Python 3.6, 3.7, 3.8.
+.. image:: https://badge.fury.io/py/routely.svg
+    :target: https://badge.fury.io/py/routely
+
+Travis build Python 3.7, 3.8.
 
 Intro
 =====
